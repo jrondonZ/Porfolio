@@ -1,429 +1,330 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Josiah Rondon — Portfolio</title>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Caveat:wght@600;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
   <!-- D3 -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
 
   <style>
-    /* -----------------------------------------------
-       DTMF COLOR PALETTE
-    ------------------------------------------------ */
     :root {
-      --c-blue:   #5590C8;
-      --c-yellow: #F5C833;
-      --c-cream:  #F2E8D0;
-      --c-dark:   #111111;
-      --c-red:    #D93025;
-      --c-green:  #2A5C3F;
+      --blue: #5590C8;
+      --yellow: #F5C833;
+      --cream: #F2E8D0;
+      --dark: #111;
+      --red: #D93025;
+      --green: #2A5C3F;
     }
 
-    /* -----------------------------------------------
-       BASE STYLES
-    ------------------------------------------------ */
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
     body {
-      font-family: 'Space Grotesk', sans-serif;
-      background: var(--c-blue);
-      color: var(--c-cream);
-      overflow-x: hidden;
+      font-family:'Space Grotesk', sans-serif;
+      background:var(--blue);
+      color:var(--cream);
+      overflow-x:hidden;
     }
 
-    img { display: block; max-width: 100%; }
-
-    /* -----------------------------------------------
-       GRAIN TEXTURE OVERLAY
-    ------------------------------------------------ */
-    .grain {
-      position: relative;
-      overflow: hidden;
-    }
+    /* Film grain */
     .grain::after {
-      content: "";
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      z-index: 15;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='500' height='500' filter='url(%23n)' opacity='0.055'/%3E%3C/svg%3E");
-      background-size: 220px 220px;
-      mix-blend-mode: soft-light;
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4'/%3E%3C/filter%3E%3Crect width='500' height='500' filter='url(%23n)' opacity='0.06'/%3E%3C/svg%3E");
+      background-size:200px 200px;
+      mix-blend-mode:soft-light;
+      opacity:.6;
+      z-index:5;
     }
 
     .inner {
-      position: relative;
-      z-index: 20;
-      max-width: 1080px;
-      margin: 0 auto;
-      padding: 6rem 2rem;
-      animation: fadeIn .8s ease-out forwards;
-      opacity: 0;
+      position:relative;
+      z-index:10;
+      max-width:1100px;
+      margin:0 auto;
+      padding:6rem 2rem;
+      opacity:0;
+      transform:translateY(25px);
+      animation:fadeUp .9s ease forwards;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(25px); }
-      to   { opacity: 1; transform: translateY(0); }
+    @keyframes fadeUp {
+      to { opacity:1; transform:translateY(0); }
     }
 
-    /* -----------------------------------------------
-       NAVIGATION
-    ------------------------------------------------ */
+    /* NAV */
     #nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1.1rem 2.5rem;
-      z-index: 999;
-      background: rgba(85,144,200,0.88);
-      backdrop-filter: blur(18px);
-      border-bottom: 1px solid rgba(242,232,208,0.15);
+      position:fixed; top:0; left:0; right:0;
+      display:flex; align-items:center; justify-content:space-between;
+      padding:1rem 2.5rem;
+      background:rgba(85,144,200,0.82);
+      backdrop-filter:blur(18px);
+      z-index:999;
+      border-bottom:1px solid rgba(242,232,208,0.12);
     }
-
     .nav-logo {
-      font-family: 'Anton';
-      font-size: 1.3rem;
-      letter-spacing: 0.14em;
-      text-decoration: none;
-      color: var(--c-cream);
+      font-family:'Anton';
+      font-size:1.4rem;
+      color:var(--cream);
+      letter-spacing:0.12em;
+      text-decoration:none;
     }
-
     .nav-list {
-      list-style: none;
-      display: flex;
-      gap: 2rem;
+      list-style:none;
+      display:flex;
+      gap:2rem;
     }
-
     .nav-list a {
-      color: var(--c-cream);
-      text-decoration: none;
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      opacity: 0.7;
-      transition: opacity .2s;
+      color:var(--cream);
+      font-size:.8rem;
+      text-decoration:none;
+      text-transform:uppercase;
+      letter-spacing:.15em;
+      opacity:.75;
+      transition:.2s;
     }
+    .nav-list a:hover { opacity:1; }
 
-    .nav-list a:hover {
-      opacity: 1;
-    }
-
-    /* Mobile nav */
+    /* Mobile */
     .ham {
-      display: none;
-      flex-direction: column;
-      gap: 5px;
-      cursor: pointer;
-      background: none;
-      border: none;
+      display:none;
+      flex-direction:column;
+      gap:5px;
+      background:none;
+      border:none;
+      cursor:pointer;
     }
-
     .ham span {
-      width: 22px;
-      height: 2px;
-      background: var(--c-cream);
-      transition: .3s;
+      width:22px;
+      height:2px;
+      background:var(--cream);
     }
 
-    /* -----------------------------------------------
-       HERO SECTION
-    ------------------------------------------------ */
+    /* HERO */
     #hero {
-      min-height: 100vh;
-      position: relative;
-      padding: 8rem 2rem 4rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
+      position:relative;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      text-align:center;
+      padding:7rem 2rem 5rem;
     }
-
     .hero-bg {
-      position: absolute;
-      inset: 0;
-      background-image: url('assets/dtmf.jpg');
-      background-size: cover;
-      background-position: center;
-      opacity: 0.17;
-      z-index: 1;
+      position:absolute; inset:0;
+      background-image:url('assets/dtmf.jpg');
+      background-size:cover;
+      background-position:center;
+      opacity:0.14;
+      z-index:1;
     }
 
     .hero-body {
-      position: relative;
-      z-index: 30;
-      max-width: 800px;
-      animation: slideUp .9s ease-out;
-    }
-
-    @keyframes slideUp {
-      from { opacity: 0; transform: translateY(40px); }
-      to   { opacity: 1; transform: translateY(0); }
+      position:relative;
+      z-index:20;
+      animation:fadeUp 1.1s ease forwards;
     }
 
     .hero-eye {
-      font-family: 'Caveat';
-      font-size: 1.4rem;
-      color: var(--c-yellow);
-      margin-bottom: 1rem;
+      font-family:'Caveat';
+      font-size:1.4rem;
+      color:var(--yellow);
+      margin-bottom:.8rem;
     }
 
     .hero-name {
-      font-family: 'Anton';
-      font-size: clamp(4rem, 12vw, 11rem);
-      line-height: 0.85;
-      text-transform: uppercase;
-      color: var(--c-cream);
-      margin-bottom: 1rem;
-      text-shadow: 0 5px 20px rgba(0,0,0,0.3);
+      font-family:'Anton';
+      font-size:clamp(4rem,11vw,10.5rem);
+      line-height:.85;
+      text-transform:uppercase;
+      text-shadow:0 4px 14px rgba(0,0,0,0.35);
+      margin-bottom:1rem;
+    }
+
+    .core-tech {
+      margin:1.2rem 0 2.2rem;
+      display:flex;
+      justify-content:center;
+      flex-wrap:wrap;
+      gap:1.1rem;
+      opacity:.88;
+    }
+    .tech-pill {
+      padding:.5rem 1rem;
+      border:1px solid rgba(255,255,255,0.25);
+      border-radius:3px;
+      font-size:.75rem;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      backdrop-filter:blur(4px);
     }
 
     .hero-sub {
-      letter-spacing: 0.18em;
-      font-size: 1rem;
-      text-transform: uppercase;
-      opacity: 0.7;
-      margin-bottom: 2rem;
+      font-size:.95rem;
+      letter-spacing:.2em;
+      text-transform:uppercase;
+      opacity:.65;
+      margin-bottom:2rem;
     }
 
     .hero-cta {
-      display: flex;
-      justify-content: center;
-      flex-wrap: wrap;
-      gap: 1rem;
+      display:flex;
+      justify-content:center;
+      flex-wrap:wrap;
+      gap:1rem;
     }
 
-    /* Buttons */
     .btn {
-      padding: 0.85rem 2rem;
-      font-size: 0.78rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      border-radius: 2px;
-      cursor: pointer;
-      text-decoration: none;
-      transition: transform .2s, box-shadow .2s;
+      padding:.82rem 2rem;
+      text-decoration:none;
+      font-weight:700;
+      letter-spacing:.13em;
+      text-transform:uppercase;
+      border-radius:2px;
+      transition:.2s;
     }
+    .btn:hover { transform:translateY(-3px); }
 
-    .btn:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 10px 28px rgba(0,0,0,0.24);
-    }
+    .btn-y { background:var(--yellow); color:var(--dark); }
+    .btn-out { border:2px solid var(--cream); color:var(--cream); }
 
-    .btn-y  { background: var(--c-yellow); color: var(--c-dark); }
-    .btn-cr { background: transparent; border: 2px solid var(--c-cream); color: var(--c-cream); }
-    .btn-cr:hover { background: var(--c-cream); color: var(--c-dark); }
-
-    /* Coqui Badge */
     .hero-coqui {
-      position: absolute;
-      right: 4rem;
-      bottom: 4rem;
-      width: 130px;
-      animation: float 5s ease-in-out infinite;
-      z-index: 20;
+      position:absolute;
+      width:130px;
+      right:4rem;
+      bottom:4rem;
+      z-index:20;
+      animation:float 5s ease-in-out infinite;
     }
-
     @keyframes float {
-      0%,100% { transform: translateY(0) rotate(-3deg); }
-      50%     { transform: translateY(-12px) rotate(3deg); }
+      0%,100% { transform:translateY(0) rotate(-3deg); }
+      50%     { transform:translateY(-12px) rotate(3deg); }
     }
 
-    /* Scroll Hint */
     .scroll-hint {
-      position: absolute;
-      left: 50%;
-      bottom: 2rem;
-      transform: translateX(-50%);
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      font-size: 0.7rem;
-      opacity: 0.55;
-      animation: pulse 2s infinite;
+      position:absolute;
+      bottom:2.3rem;
+      left:50%; transform:translateX(-50%);
+      font-size:.7rem;
+      opacity:.55;
+      text-transform:uppercase;
+      letter-spacing:.2em;
+      animation:pulse 2s infinite;
     }
+    @keyframes pulse { 50%{opacity:1;} }
 
-    @keyframes pulse {
-      0%,100% { opacity: 0.5; }
-      50%     { opacity: 1; }
-    }
-
-    /* -----------------------------------------------
-       FILMSTRIP SEPARATOR
-    ------------------------------------------------ */
+    /* Filmstrip */
     .filmstrip {
-      background: var(--c-dark);
-      display: flex;
-      gap: 3px;
-      padding: 5px 3px;
+      background:var(--dark);
+      display:flex; gap:3px;
+      padding:4px 3px;
     }
     .fhole {
-      width: 16px;
-      height: 10px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 2px;
+      width:16px;height:10px;
+      background:rgba(255,255,255,0.07);
+      border-radius:2px;
     }
 
-    /* -----------------------------------------------
-       ABOUT SECTION
-    ------------------------------------------------ */
-    #about {
-      background: var(--c-yellow);
-      color: var(--c-dark);
-    }
-
-    #about .sec-eye {
-      font-family: 'Caveat';
-      color: var(--c-green);
-      font-size: 1.1rem;
-    }
-
+    /* ABOUT */
+    #about { background:var(--yellow); color:var(--dark); }
+    #about .sec-eye { font-family:'Caveat'; font-size:1.15rem; color:var(--green); }
     #about .sec-h {
-      font-family: 'Anton';
-      font-size: clamp(2.5rem, 5vw, 5rem);
-      text-transform: uppercase;
-      line-height: 0.9;
-      margin-bottom: 3rem;
+      font-family:'Anton';
+      font-size:clamp(2.4rem,5vw,4.8rem);
+      text-transform:uppercase;
+      margin-bottom:2.6rem;
+      line-height:.9;
     }
-
     .about-copy p {
-      font-size: 1.05rem;
-      line-height: 1.8;
-      margin-bottom: 1.2rem;
-      color: #1d1d1d;
+      font-size:1.08rem;
+      line-height:1.82;
+      margin-bottom:1.2rem;
+      color:#1b1b1b;
     }
+    .about-cta { margin-top:1.6rem; }
 
-    .about-cta {
-      margin-top: 1.5rem;
-      display: flex;
-      gap: 1rem;
-    }
-
-    /* -----------------------------------------------
-       EXPERIENCE SECTION
-    ------------------------------------------------ */
-    #experience {
-      background: var(--c-blue);
-      color: var(--c-cream);
-    }
-
-    #experience .sec-eye {
-      font-family: 'Caveat';
-      color: var(--c-yellow);
-    }
-
+    /* EXPERIENCE */
+    #experience { background:var(--blue); color:var(--cream); }
+    #experience .sec-eye { font-family:'Caveat'; color:var(--yellow); }
     #experience .sec-h {
-      font-family: 'Anton';
-      font-size: clamp(2.5rem, 5vw, 5rem);
-      text-transform: uppercase;
-      margin-bottom: 3rem;
+      font-family:'Anton';
+      font-size:clamp(2.4rem,5vw,4.8rem);
+      text-transform:uppercase;
+      margin-bottom:3rem;
     }
 
-    .timeline {
-      position: relative;
-      padding-left: 1.6rem;
-    }
-
+    .timeline { position:relative; padding-left:2rem; }
     .timeline::before {
-      content: "";
-      position: absolute;
-      top: 10px;
-      bottom: 10px;
-      left: 0;
-      width: 2px;
-      background: var(--c-yellow);
+      content:"";
+      position:absolute; left:0; top:15px; bottom:15px;
+      width:2px; background:var(--yellow);
     }
 
     .tl {
-      position: relative;
-      padding-left: 2rem;
-      padding-bottom: 3rem;
-      animation: fadeInUp 1s ease both;
+      position:relative;
+      padding-left:2rem;
+      padding-bottom:3rem;
+      animation:fadeUp .9s ease forwards;
     }
-
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(35px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
     .tl::before {
-      content: "";
-      position: absolute;
-      left: -9px;
-      top: 4px;
-      width: 18px;
-      height: 18px;
-      background: var(--c-yellow);
-      border: 3px solid var(--c-blue);
-      border-radius: 100%;
+      content:"";
+      position:absolute; left:-9px; top:5px;
+      width:18px;height:18px;
+      background:var(--yellow);
+      border:3px solid var(--blue);
+      border-radius:50%;
     }
 
-    .tl-date {
-      font-family: 'Caveat';
-      font-size: 1.1rem;
-      color: var(--c-yellow);
-    }
-
-    .tl-title {
-      font-family: 'Anton';
-      font-size: 1.9rem;
-      margin: .1rem 0;
-    }
-
+    .tl-date { font-family:'Caveat'; font-size:1.1rem; color:var(--yellow); }
+    .tl-title { font-family:'Anton'; font-size:1.9rem; margin:.25rem 0; }
     .tl-co {
-      text-transform: uppercase;
-      font-size: 0.78rem;
-      letter-spacing: 0.14em;
-      opacity: 0.6;
-      margin-bottom: .8rem;
+      font-size:.78rem;
+      text-transform:uppercase;
+      opacity:.6;
+      letter-spacing:.14em;
+      margin-bottom:.7rem;
     }
 
     .tl-pts {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: .55rem;
+      list-style:none;
+      display:flex;
+      flex-direction:column;
+      gap:.55rem;
     }
-
     .tl-pts li {
-      position: relative;
-      padding-left: 1.1rem;
-      font-size: .95rem;
-      line-height: 1.7;
-      opacity: 0.82;
+      font-size:.95rem;
+      line-height:1.7;
+      opacity:.82;
+      padding-left:1rem;
+      position:relative;
     }
-
     .tl-pts li::before {
-      content: "—";
-      position: absolute;
-      left: 0;
-      color: var(--c-yellow);
+      content:"—";
+      position:absolute; left:0;
+      color:var(--yellow);
     }
 
-    /* Mobile Nav */
-    @media (max-width: 850px) {
-      .nav-list {
-        display: none;
-        position: fixed;
-        inset: 0;
-        background: var(--c-blue);
-        flex-direction: column;
-        justify-content: center;
-        gap: 2rem;
-        z-index: 900;
+    /* MOBILE NAV */
+    @media(max-width:850px){
+      .nav-list { display:none; }
+      .nav-list.open {
+        display:flex; flex-direction:column;
+        position:fixed; inset:0;
+        justify-content:center; gap:2rem;
+        background:var(--blue);
+        z-index:900;
       }
-      .nav-list.open { display: flex; }
-      .ham { display: flex; }
-      .hero-coqui { right: 1.4rem; bottom: 6rem; width: 90px; }
-      .inner { padding: 4rem 1.6rem; }
+      .ham { display:flex; }
+      .hero-coqui { width:90px; right:1.3rem; bottom:6rem; }
+      .inner { padding:4rem 1.5rem; }
     }
   </style>
 </head>
@@ -433,7 +334,6 @@
 <!-- NAV -->
 <nav id="nav">
   <a href="#hero" class="nav-logo">JR</a>
-
   <ul class="nav-list" id="navList">
     <li><a href="#about" onclick="closeNav()">About</a></li>
     <li><a href="#experience" onclick="closeNav()">Experience</a></li>
@@ -441,8 +341,7 @@
     <li><a href="#skills" onclick="closeNav()">Skills</a></li>
     <li><a href="#contact" onclick="closeNav()">Contact</a></li>
   </ul>
-
-  <button class="ham" id="ham" onclick="toggleNav()">
+  <button class="ham" onclick="toggleNav()">
     <span></span><span></span><span></span>
   </button>
 </nav>
@@ -452,19 +351,30 @@
   <div class="hero-bg"></div>
 
   <div class="hero-body">
-    <p class="hero-eye">Software Developer · Puerto Rico </p>
+    <p class="hero-eye">Software Engineer · AI & Systems Development · 2026</p>
 
     <h1 class="hero-name">Josiah<br>Rondon</h1>
+
+    <!-- NEW CORE TECH ROW -->
+    <div class="core-tech">
+      <div class="tech-pill">Python</div>
+      <div class="tech-pill">JavaScript</div>
+      <div class="tech-pill">AI/ML</div>
+      <div class="tech-pill">Azure</div>
+      <div class="tech-pill">Docker</div>
+      <div class="tech-pill">OAuth</div>
+      <div class="tech-pill">APIs</div>
+    </div>
 
     <p class="hero-sub">Building things that matter</p>
 
     <div class="hero-cta">
       <a href="#projects" class="btn btn-y">View Projects →</a>
-      <a href="#contact" class="btn btn-cr">Get In Touch</a>
+      <a href="#contact" class="btn btn-out">Get In Touch</a>
     </div>
   </div>
 
-  <img src="coqui.webp" alt="Coquí badge" class="hero-coqui"/>
+  <img src="assets/coqui.webp" class="hero-coqui" alt="Coquí sticker">
   <div class="scroll-hint">Scroll ↓</div>
 </section>
 
@@ -482,19 +392,19 @@
 
     <div class="about-copy">
       <p>
-        I’m <strong>Josiah Rondon</strong>, a software developer and computer science student dedicated to 
-        building clean, reliable, and purposeful software. My work spans AI systems, automation 
-        tooling, data pipelines, and full‑stack development. I enjoy solving difficult problems, 
-        designing maintainable systems, and creating technology that actually helps people.
+        I’m <strong>Josiah Rondon</strong>, a software engineer focused on building 
+        clean, reliable, and purposeful systems. My work spans AI development, automation tooling,
+        secure authentication workflows, and large‑scale data pipelines.
       </p>
+
       <p>
-        I’m experienced with enterprise‑level engineering and academic 
-        research, and always exploring modern tools — especially across AI, systems engineering, 
-        and data‑driven development.
+        I’m experienced across enterprise engineering at Yale ITS and academic research environments,
+        working with Python, ML, genomic data, and cloud tools. I like solving complex problems,
+        designing maintainable systems, and building technology with real-world impact.
       </p>
 
       <div class="about-cta">
-        <a href="Josiah_Rondon_resume.pdf" target="_blank" class="btn btn-cr">Download Résumé</a>
+        <a href="assets/Josiah_Rondon_resume.pdf" class="btn btn-out">Download Résumé</a>
       </div>
     </div>
   </div>
@@ -508,42 +418,39 @@
 
     <div class="timeline">
 
-      <!-- EXPERIENCE ITEM 1 -->
       <div class="tl">
         <div class="tl-date">June 2025 – Present</div>
         <div class="tl-title">Software Engineer Intern</div>
         <div class="tl-co">Yale Information Technology Services</div>
 
         <ul class="tl-pts">
-          <li>Developed and deployed an AI‑powered chatbot using OutSystems + AI Agent Builder to automate SharePoint workflows.</li>
-          <li>Built a Layer 7 OAuth proof‑of‑concept in Python integrated with the Yale Directory for streamlined enterprise authentication.</li>
-          <li>Maintained CI/CD pipelines using Git/GitHub, Docker, and Scrum methodologies to improve development flow.</li>
+          <li>Developed an AI-powered chatbot using OutSystems + AI Agent Builder to automate SharePoint workflows.</li>
+          <li>Built a Python Layer 7 OAuth proof‑of‑concept integrated with the Yale Directory.</li>
+          <li>Maintained CI/CD pipelines using Git/GitHub, Docker, and Scrum.</li>
         </ul>
       </div>
 
-      <!-- EXPERIENCE ITEM 2 -->
       <div class="tl">
         <div class="tl-date">June – August 2024</div>
         <div class="tl-title">Central ITS Technician Intern</div>
         <div class="tl-co">Yale IT</div>
 
         <ul class="tl-pts">
-          <li>Helped resolve a major CrowdStrike outage impacting 600+ Windows devices using BitLocker recovery, Intune, and Azure Remote Desktop.</li>
-          <li>Provisioned 100+ Windows and Mac devices for secure onboarding into Yale’s managed ecosystem.</li>
-          <li>Delivered technical support for 60+ clients with consistent resolution using Azure, Intune, and ServiceNow.</li>
+          <li>Helped resolve a major CrowdStrike outage affecting 600+ Windows devices.</li>
+          <li>Provisioned 100+ Windows/Mac systems for secure onboarding.</li>
+          <li>Delivered technical support for 60+ clients using Azure, Intune, ServiceNow.</li>
         </ul>
       </div>
 
-      <!-- EXPERIENCE ITEM 3 -->
       <div class="tl">
         <div class="tl-date">September 2024 – Present</div>
         <div class="tl-title">Service Desktop Support Assistant</div>
         <div class="tl-co">Connecticut College IT Service Desk</div>
 
         <ul class="tl-pts">
-          <li>Achieved a 90% first‑contact resolution rate across Windows and macOS systems.</li>
-          <li>Managed DUO authentication, password resets, and account troubleshooting to reduce downtime.</li>
-          <li>Improved communication workflows through Gmail and Web Help Desk.</li>
+          <li>Achieved a 90% first-contact resolution rate across Windows/macOS.</li>
+          <li>Managed DUO authentication, password resets, and account security.</li>
+          <li>Improved communication workflows using Gmail + Web Help Desk.</li>
         </ul>
       </div>
 
@@ -560,148 +467,125 @@
 <section id="projects" class="grain">
   <div class="inner">
     <span class="sec-eye">03 — Research & Development</span>
-    <h2 class="sec-h" style="color:var(--c-cream);">Projects</h2>
+    <h2 class="sec-h" style="color:var(--cream);">Projects</h2>
 
-    <div class="proj-grid" style="
+    <div style="
       display:grid;
-      grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
-      gap:1.6rem;
+      grid-template-columns:repeat(auto-fit,minmax(290px,1fr));
+      gap:1.8rem;
     ">
 
-      <!-- PROJECT CARD TEMPLATE (Dark DTMF Style) -->
       <style>
         .proj-card {
-          background: var(--c-dark);
-          border: 1px solid rgba(255,255,255,0.08);
-          border-radius: 4px;
-          padding: 1.4rem;
-          min-height: 240px;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.25);
-          transition: transform .25s, box-shadow .25s;
-          opacity: 0;
-          animation: fadeUp .9s ease forwards;
+          background:var(--dark);
+          padding:1.6rem;
+          border-radius:4px;
+          border:1px solid rgba(255,255,255,0.1);
+          box-shadow:0 10px 28px rgba(0,0,0,0.35);
+          color:var(--cream);
+          display:flex;
+          flex-direction:column;
+          justify-content:space-between;
+          gap:1.1rem;
+          opacity:0;
+          transform:translateY(25px);
+          animation:cardUp .8s ease forwards;
         }
-
-        .proj-card:hover {
-          transform: translateY(-6px);
-          box-shadow: 0 14px 36px rgba(0,0,0,0.35);
+        @keyframes cardUp {
+          to { opacity:1; transform:translateY(0); }
         }
-
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(35px); }
-          to { opacity: 1; transform: translateY(0); }
+        .proj-title {
+          font-family:'Anton';
+          font-size:1.55rem;
+          letter-spacing:.015em;
+          margin-bottom:.4rem;
         }
-
-        .proj-name {
-          font-family: 'Anton';
-          font-size: 1.6rem;
-          letter-spacing: 0.02em;
-          margin-bottom: .6rem;
-          color: var(--c-cream);
-        }
-
         .proj-desc {
-          font-size: .95rem;
-          line-height: 1.6;
-          opacity: 0.75;
-          margin-bottom: 1.2rem;
+          font-size:.92rem;
+          line-height:1.65;
+          opacity:.8;
         }
-
         .chip {
-          display:inline-block;
-          padding: .2rem .55rem;
-          font-size: .68rem;
+          padding:.25rem .6rem;
+          font-size:.7rem;
+          border-radius:2px;
           font-weight:700;
-          letter-spacing:.09em;
           text-transform:uppercase;
-          border-radius: 2px;
+          letter-spacing:.08em;
         }
-        .cy { background: var(--c-yellow); color: var(--c-dark); }
-        .cb { background: var(--c-blue); color: var(--c-cream); }
-        .cr { background: var(--c-red); color: white; }
+        .chip-yellow { background:var(--yellow); color:var(--dark); }
+        .chip-blue { background:var(--blue); color:var(--cream); }
+        .chip-red { background:var(--red); color:white; }
       </style>
 
-      <!-- CARD 1 -->
+      <!-- Project Cards -->
       <div class="proj-card">
         <div>
-          <div class="proj-name">Structural Variant Ensemble Framework</div>
+          <div class="proj-title">Structural Variant Ensemble Framework</div>
           <div class="proj-desc">
-            Designed a unified system combining multiple SV callers and sequencing technologies
-            to generate high‑confidence genomic variation profiles.
+            Designed a unified system that integrates multiple SV callers and sequencing
+            technologies to generate high-confidence variant calls across genome datasets.
           </div>
         </div>
-
         <div>
-          <span class="chip cb">Python</span>
-          <span class="chip cy">Genomics</span>
-          <span class="chip cr">Research</span>
+          <span class="chip chip-blue">Python</span>
+          <span class="chip chip-yellow">Genomics</span>
         </div>
       </div>
 
-      <!-- CARD 2 -->
       <div class="proj-card">
         <div>
-          <div class="proj-name">Microhomology Signature Modeling</div>
+          <div class="proj-title">Microhomology Signature Modeling</div>
           <div class="proj-desc">
-            Created a detection algorithm that quantifies microhomology at SV breakpoints,
-            revealing patterns tied to DNA repair mechanisms like MMEJ.
+            Built algorithms to quantify microhomology at SV breakpoints, revealing mutation
+            patterns associated with error-prone DNA repair mechanisms like MMEJ.
           </div>
         </div>
-
         <div>
-          <span class="chip cb">Python</span>
-          <span class="chip cy">Algorithms</span>
+          <span class="chip chip-blue">Python</span>
+          <span class="chip chip-red">Algorithms</span>
         </div>
       </div>
 
-      <!-- CARD 3 -->
       <div class="proj-card">
         <div>
-          <div class="proj-name">High‑Throughput Genome Processing Pipeline</div>
+          <div class="proj-title">High‑Throughput Genome Processing Pipeline</div>
           <div class="proj-desc">
-            Built a parallelized, scalable genome‑wide processing pipeline for datasets such
-            as 1000 Genomes Phase 4 with optimized batch workflows.
+            Engineered a scalable parallel genome processing pipeline for large datasets
+            such as 1000 Genomes Phase 4, optimized for performance and batching.
           </div>
         </div>
-
         <div>
-          <span class="chip cb">Python</span>
-          <span class="chip cy">HPC</span>
+          <span class="chip chip-blue">Python</span>
+          <span class="chip chip-yellow">HPC</span>
         </div>
       </div>
 
-      <!-- CARD 4 -->
       <div class="proj-card">
         <div>
-          <div class="proj-name">Machine Learning for Variant Detection</div>
+          <div class="proj-title">Machine Learning for Variant Detection</div>
           <div class="proj-desc">
-            Implemented semi‑supervised ML models to classify structural variants using
-            sequence‑level and breakpoint‑level features.
+            Developed semi‑supervised ML models to classify structural variants using
+            breakpoint-level and sequence-level statistical features.
           </div>
         </div>
-
         <div>
-          <span class="chip cb">Python</span>
-          <span class="chip cy">ML</span>
+          <span class="chip chip-blue">Python</span>
+          <span class="chip chip-yellow">ML</span>
         </div>
       </div>
 
-      <!-- CARD 5 -->
       <div class="proj-card">
         <div>
-          <div class="proj-name">VCF Interpretation & Breakpoint Analysis</div>
+          <div class="proj-title">VCF Interpretation & Breakpoint Analysis</div>
           <div class="proj-desc">
-            Developed specialized tooling for VCF pattern extraction, breakpoint clustering,
-            and k‑mer‑based signal detection across large variant sets.
+            Created custom tooling for VCF pattern extraction, clustering, and k‑mer-based
+            signal detection across thousands of variant entries.
           </div>
         </div>
-
         <div>
-          <span class="chip cb">Python</span>
-          <span class="chip cy">VCF</span>
+          <span class="chip chip-blue">Python</span>
+          <span class="chip chip-yellow">VCF</span>
         </div>
       </div>
 
@@ -719,7 +603,7 @@
 <section id="skills" class="grain">
   <div class="inner">
     <span class="sec-eye">04 — Skills</span>
-    <h2 class="sec-h" style="color:var(--c-dark);">Skills</h2>
+    <h2 class="sec-h" style="color:var(--dark);">Skills</h2>
 
     <div style="
       display:grid;
@@ -727,69 +611,54 @@
       gap:3rem;
     ">
 
-      <!-- SKILL BARS -->
+      <!-- Skill Categories -->
       <div>
         <style>
-          .sk-block {
-            margin-bottom: 1.4rem;
-            opacity: 0;
-            animation: fadeUp .9s ease forwards;
+          .skill-cat { margin-bottom:2.2rem; }
+          .skill-cat-title {
+            font-family:'Anton';
+            font-size:1.4rem;
+            margin-bottom:.8rem;
+            color:var(--dark);
           }
-          .sk-title {
-            display:flex;
-            justify-content:space-between;
-            font-size:.85rem;
-            letter-spacing:.1em;
-            text-transform:uppercase;
-            margin-bottom:.35rem;
-          }
-          .sk-bar {
-            width:100%;
-            height:8px;
-            background:rgba(0,0,0,0.13);
-            border-radius:4px;
-            overflow:hidden;
-          }
-          .sk-fill {
-            height:100%;
-            width:0%;
-            background:var(--c-dark);
-            border-radius:4px;
-            transition:width 1s ease;
+          .skill-item {
+            font-size:1rem;
+            margin-bottom:.4rem;
+            opacity:.85;
           }
         </style>
 
-        <div class="sk-block">
-          <div class="sk-title"><span>Python</span><span>Advanced</span></div>
-          <div class="sk-bar"><div class="sk-fill" data-level="95"></div></div>
+        <div class="skill-cat">
+          <div class="skill-cat-title">Languages</div>
+          <div class="skill-item">Python</div>
+          <div class="skill-item">JavaScript</div>
+          <div class="skill-item">Java</div>
+          <div class="skill-item">Ruby</div>
+          <div class="skill-item">SQL</div>
         </div>
 
-        <div class="sk-block">
-          <div class="sk-title"><span>JavaScript</span><span>Intermediate</span></div>
-          <div class="sk-bar"><div class="sk-fill" data-level="80"></div></div>
+        <div class="skill-cat">
+          <div class="skill-cat-title">Tools & Frameworks</div>
+          <div class="skill-item">Node.js</div>
+          <div class="skill-item">Docker</div>
+          <div class="skill-item">Azure</div>
+          <div class="skill-item">Git/GitHub</div>
+          <div class="skill-item">OutSystems</div>
         </div>
 
-        <div class="sk-block">
-          <div class="sk-title"><span>Ruby</span><span>Intermediate</span></div>
-          <div class="sk-bar"><div class="sk-fill" data-level="75"></div></div>
-        </div>
-
-        <div class="sk-block">
-          <div class="sk-title"><span>Node.js</span><span>Intermediate</span></div>
-          <div class="sk-bar"><div class="sk-fill" data-level="78"></div></div>
-        </div>
-
-        <div class="sk-block">
-          <div class="sk-title"><span>AI / ML</span><span>Intermediate</span></div>
-          <div class="sk-bar"><div class="sk-fill" data-level="70"></div></div>
+        <div class="skill-cat">
+          <div class="skill-cat-title">AI & Systems</div>
+          <div class="skill-item">LLMs</div>
+          <div class="skill-item">Model Training & Fine‑Tuning</div>
+          <div class="skill-item">Semi‑Supervised ML</div>
+          <div class="skill-item">Algorithm Design</div>
         </div>
       </div>
 
-      <!-- D3 BUBBLE CHART -->
-      <div style="width:100%; aspect-ratio:1;">
-        <svg id="d3chart"></svg>
+      <!-- D3 BUBBLE CHART (Physics Simulation) -->
+      <div style="position:relative;width:100%;aspect-ratio:1;">
+        <svg id="skills-bubbles" style="width:100%;height:100%;"></svg>
       </div>
-
     </div>
   </div>
 </section>
@@ -804,111 +673,102 @@
 <section id="contact" class="grain">
   <div class="inner">
     <span class="sec-eye">05 — Contact</span>
-    <h2 class="sec-h" style="color:var(--c-cream);">Get In Touch</h2>
+    <h2 class="sec-h" style="color:var(--cream);">Get In Touch</h2>
 
-    <div style="
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:3rem;
-    ">
-
-      <!-- CONTACT INFO -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:3rem;">
       <div>
-        <p style="font-size:1rem; line-height:1.7; opacity:.85; margin-bottom:1.8rem;">
-          If you'd like to collaborate, talk tech, or start a project, feel free to reach out.
-          I'm always open to connecting with builders, researchers, and creators.
+        <p style="font-size:1rem;line-height:1.75;opacity:.85;margin-bottom:1.8rem;">
+          If you'd like to collaborate, talk tech, or discuss a project,
+          feel free to reach out. I’m always open to connecting with
+          engineers, researchers, and builders.
         </p>
 
-        <div style="display:flex;flex-direction:column;gap:1.2rem;">
+        <div style="display:flex;flex-direction:column;gap:1.4rem;">
 
-          <!-- EMAIL -->
           <a href="mailto:josiahrondon@gmail.com" style="
             display:flex;align-items:center;gap:1rem;
-            text-decoration:none;color:var(--c-cream);
-            padding-bottom:.8rem;border-bottom:1px solid rgba(255,255,255,0.12);
+            color:var(--cream);text-decoration:none;
+            padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,0.1);
           ">
             <div style="
-              width:42px;height:42px;background:rgba(255,255,255,0.1);
-              border-radius:4px;display:flex;align-items:center;justify-content:center;
-              font-weight:700;
+              width:46px;height:46px;background:rgba(255,255,255,0.1);
+              border-radius:4px;display:flex;align-items:center;
+              justify-content:center;font-weight:700;
             ">✉️</div>
             <div>
               <div>Email</div>
-              <div style="opacity:.55;font-size:.82rem;">josiahrondon@gmail.com</div>
+              <div style="opacity:.5;font-size:.85rem;">josiahrondon@gmail.com</div>
             </div>
           </a>
 
-          <!-- GitHub -->
           <a href="https://github.com/jrondonZ" target="_blank" style="
             display:flex;align-items:center;gap:1rem;
-            text-decoration:none;color:var(--c-cream);
-            padding-bottom:.8rem;border-bottom:1px solid rgba(255,255,255,0.12);
+            color:var(--cream);text-decoration:none;
+            padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,0.1);
           ">
             <div style="
-              width:42px;height:42px;background:rgba(255,255,255,0.1);
-              border-radius:4px;display:flex;align-items:center;justify-content:center;
-              font-weight:700;
+              width:46px;height:46px;background:rgba(255,255,255,0.1);
+              border-radius:4px;display:flex;align-items:center;
+              justify-content:center;font-weight:700;
             ">GH</div>
             <div>
               <div>GitHub</div>
-              <div style="opacity:.55;font-size:.82rem;">github.com/jrondonZ</div>
+              <div style="opacity:.5;font-size:.85rem;">github.com/jrondonZ</div>
             </div>
           </a>
 
-          <!-- LinkedIn -->
           <a href="https://www.linkedin.com/in/josiah-zackaiih-rondon-57a309292/" target="_blank" style="
             display:flex;align-items:center;gap:1rem;
-            text-decoration:none;color:var(--c-cream);
-            padding-bottom:.8rem;border-bottom:1px solid rgba(255,255,255,0.12);
+            color:var(--cream);text-decoration:none;
+            padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,0.1);
           ">
             <div style="
-              width:42px;height:42px;background:rgba(255,255,255,0.1);
-              border-radius:4px;display:flex;align-items:center;justify-content:center;
-              font-weight:700;
+              width:46px;height:46px;background:rgba(255,255,255,0.1);
+              border-radius:4px;display:flex;align-items:center;
+              justify-content:center;font-weight:700;
             ">IN</div>
             <div>
               <div>LinkedIn</div>
-              <div style="opacity:.55;font-size:.82rem;">Connect with me</div>
+              <div style="opacity:.5;font-size:.85rem;">Connect with me</div>
             </div>
           </a>
-
         </div>
       </div>
 
-      <!-- CONTACT FORM -->
-      <form onsubmit="event.preventDefault(); showMsg();" class="cform" style="display:flex;flex-direction:column;gap:1rem;">
-        <div class="fg">
+      <!-- Contact Form -->
+      <form onsubmit="event.preventDefault();showMsg();" style="display:flex;flex-direction:column;gap:1.2rem;">
+        <div>
           <label style="font-size:.75rem;opacity:.6;text-transform:uppercase;letter-spacing:.1em;">Name</label>
           <input required placeholder="Your name" style="
-            padding:.8rem 1rem;border-radius:4px;
+            width:100%;padding:.8rem 1rem;border-radius:4px;
             background:rgba(255,255,255,0.1);
-            border:1px solid rgba(255,255,255,0.18);
-            color:var(--c-cream);
-          ">
+            border:1px solid rgba(255,255,255,0.15);
+            color:var(--cream);
+          "/>
         </div>
 
-        <div class="fg">
+        <div>
           <label style="font-size:.75rem;opacity:.6;text-transform:uppercase;letter-spacing:.1em;">Email</label>
-          <input type="email" required placeholder="Your email" style="
-            padding:.8rem 1rem;border-radius:4px;
+          <input required type="email" placeholder="Your email" style="
+            width:100%;padding:.8rem 1rem;border-radius:4px;
             background:rgba(255,255,255,0.1);
-            border:1px solid rgba(255,255,255,0.18);
-            color:var(--c-cream);
-          ">
+            border:1px solid rgba(255,255,255,0.15);
+            color:var(--cream);
+          "/>
         </div>
 
-        <div class="fg">
+        <div>
           <label style="font-size:.75rem;opacity:.6;text-transform:uppercase;letter-spacing:.1em;">Message</label>
           <textarea required placeholder="Write your message..." style="
-            padding:.8rem 1rem;border-radius:4px;min-height:120px;
+            width:100%;padding:.8rem 1rem;border-radius:4px;min-height:140px;
             background:rgba(255,255,255,0.1);
-            border:1px solid rgba(255,255,255,0.18);
-            color:var(--c-cream);
+            border:1px solid rgba(255,255,255,0.15);
+            color:var(--cream);
           "></textarea>
         </div>
 
-        <button class="btn btn-cr" type="submit">Send Message</button>
-        <div id="fmsg" style="display:none;color:var(--c-yellow);margin-top:.4rem;">
+        <button class="btn btn-out" type="submit">Send Message</button>
+        <div id="fmsg" style="display:none;color:var(--yellow);margin-top:.4rem;">
           Message sent! (Mock submission)
         </div>
       </form>
@@ -917,14 +777,15 @@
 </section>
 
 <!-- FOOTER -->
-<footer style="background:var(--c-dark);padding:2rem;">
+<footer style="background:var(--dark);padding:2.2rem;">
   <div style="
-    max-width:1080px;margin:0 auto;
-    display:flex;justify-content:space-between;flex-wrap:wrap;gap:1rem;
+    max-width:1100px;margin:0 auto;
+    display:flex;justify-content:space-between;
+    gap:1rem;flex-wrap:wrap;color:var(--cream);
   ">
-    <div class="foot-name" style="font-family:'Anton';font-size:1.2rem;color:var(--c-cream);">Josiah Rondon</div>
-    <div class="foot-stamp" style="font-family:'Caveat';color:var(--c-yellow);">Seguimos Aquí 🐸</div>
-    <div class="foot-copy" style="font-size:.75rem;opacity:.4;">© 2025</div>
+    <div style="font-family:'Anton';font-size:1.3rem;">Josiah Rondon</div>
+    <div style="font-family:'Caveat';color:var(--yellow);font-size:1.2rem;">Seguimos Aquí 🐸</div>
+    <div style="font-size:.75rem;opacity:.4;">© 2026</div>
   </div>
 </footer>
 
@@ -935,58 +796,78 @@ const navList=document.getElementById("navList");
 function toggleNav(){navList.classList.toggle("open")}
 function closeNav(){navList.classList.remove("open")}
 
-/* Contact Form Mock */
+/* Contact Message */
 function showMsg(){
   const m=document.getElementById("fmsg");
   m.style.display="block";
-  setTimeout(()=>m.style.display="none",3000);
+  setTimeout(()=>m.style.display="none",2400);
 }
 
-/* Skill Bars Animation */
-const fills=document.querySelectorAll(".sk-fill");
-const skillsObserver=new IntersectionObserver(entries=>{
-  entries.forEach(entry=>{
-    if(entry.isIntersecting){
-      fills.forEach(f=>{
-        f.style.width=f.dataset.level+"%";
-      });
+/* Intersection: reveal animations */
+const revealObserver=new IntersectionObserver(entries=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      e.target.style.opacity=1;
+      e.target.style.transform='translateY(0)';
     }
   });
-},{threshold:0.4});
-skillsObserver.observe(document.querySelector("#skills"));
+},{threshold:.25});
 
-/* D3 Bubble Chart */
-const width=document.getElementById("d3chart").clientWidth;
-const height=document.getElementById("d3chart").clientHeight;
-const svg=d3.select("#d3chart").attr("width",width).attr("height",height);
-const data=[
-  {name:"Python",val:95,color:"#F5C833"},
-  {name:"JS",val:80,color:"#5590C8"},
-  {name:"Ruby",val:75,color:"#D93025"},
-  {name:"Node",val:78,color:"#2A5C3F"},
-  {name:"AI/ML",val:70,color:"#F2E8D0"},
+document.querySelectorAll('.inner, .proj-card').forEach(el=>revealObserver.observe(el));
+
+const svg=d3.select("#skills-bubbles");
+const width=svg.node().clientWidth;
+const height=svg.node().clientHeight;
+
+const bubbles=[
+  {name:"Python",value:95,color:"#F5C833"},
+  {name:"JavaScript",value:80,color:"#5590C8"},
+  {name:"Java",value:70,color:"#D93025"},
+  {name:"Ruby",value:75,color:"#2A5C3F"},
+  {name:"SQL",value:72,color:"#ffffff"},
+  {name:"Docker",value:65,color:"#F5C833"},
+  {name:"Azure",value:65,color:"#5590C8"},
+  {name:"Node.js",value:78,color:"#2A5C3F"},
+  {name:"LLMs",value:82,color:"#ffffff"},
+  {name:"ML",value:76,color:"#D93025"},
 ];
-const pack=d3.pack().size([width,height]).padding(10);
-const root=d3.hierarchy({children:data}).sum(d=>d.val);
-const nodes=pack(root).leaves();
-const bubble=svg.selectAll("g").data(nodes).enter().append("g")
-  .attr("transform",d=>`translate(${d.x},${d.y})`);
-bubble.append("circle")
+
+const simulation=d3.forceSimulation(bubbles)
+  .force("charge",d3.forceManyBody().strength(8))
+  .force("center",d3.forceCenter(width/2,height/2))
+  .force("collision",d3.forceCollide().radius(d=>d.value/2+12))
+  .on("tick",update);
+
+const node=svg.selectAll("g")
+  .data(bubbles)
+  .enter()
+  .append("g")
+  .attr("transform",d=>`translate(${d.x},${d.y})`)
+  .style("cursor","pointer");
+
+node.append("circle")
   .attr("r",0)
-  .attr("fill",d=>d.data.color)
-  .attr("opacity",0.9)
-  .transition().duration(1200)
-  .attr("r",d=>d.r);
-bubble.append("text")
-  .text(d=>d.data.name)
+  .transition().duration(900)
+  .attr("r",d=>d.value/2)
+  .attr("fill",d=>d.color)
+  .attr("opacity",.85)
+  .style("filter","drop-shadow(0px 4px 6px rgba(0,0,0,0.3))");
+
+node.append("text")
+  .text(d=>d.name)
   .attr("text-anchor","middle")
   .attr("dy",".35em")
   .attr("fill","black")
   .style("font-weight","700")
   .style("font-size","0.8rem");
+
+function update(){
+  node.attr("transform",d=>`translate(${d.x},${d.y})`);
+}
 </script>
 
 </body>
 </html>
+
 
 
