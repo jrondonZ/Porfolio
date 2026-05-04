@@ -443,6 +443,20 @@ canvas.addEventListener('click', () => {
 		openSection(hovered.userData.section);
 	}
 });
+
+// Add touch support for mobile devices
+canvas.addEventListener('touchstart', (e) => {
+	// Get touch position relative to canvas
+	const touch = e.touches[0];
+	const r = canvas.getBoundingClientRect();
+	pointer.x = ((touch.clientX - r.left) / r.width) * 2 - 1;
+	pointer.y = -((touch.clientY - r.top) / r.height) * 2 + 1;
+	raycaster.setFromCamera(pointer, camera);
+	const hits = raycaster.intersectObjects(hotspotMeshes.map(h => h.dot), false);
+	if (hits.length) {
+		openSection(hits[0].object.userData.section);
+	}
+}, { passive: true });
 window.addEventListener('keydown', e => {
 	if (e.key === 'Escape') {
 		closeSection();
