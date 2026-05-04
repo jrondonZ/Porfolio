@@ -1,561 +1,510 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Josiah Rondon | Neural Brain</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
-
-  <style>
-    :root{
-      --cyan:#00e5ff;
-      --gold:#fff26a;
-      --blue:#244cff;
-      --violet:#8d73ff;
-      --rose:#ffb6c9;
-      --white:#f5fbff;
-    }
-
-    *{box-sizing:border-box}
-    html,body{
-      margin:0;
-      width:100%;
-      height:100%;
-      overflow:hidden;
-      background:#000;
-      color:var(--white);
-      font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
-    }
-
-    body{
-      background:
-        radial-gradient(circle at 50% 45%, rgba(0,229,255,.10), transparent 30%),
-        radial-gradient(circle at 58% 36%, rgba(255,242,106,.07), transparent 20%),
-        #00040a;
-    }
-
-    .stage{
-      position:fixed;
-      inset:0;
-      z-index:1;
-      overflow:hidden;
-      display:grid;
-      place-items:center;
-      perspective:1200px;
-      transform-style:preserve-3d;
-    }
-
-    .brainWrap{
-      position:relative;
-      width:min(92vw,1180px);
-      aspect-ratio:16/9;
-      transform-origin:center center;
-      transform-style:preserve-3d;
-      will-change:transform, filter;
-      transition:filter .65s ease;
-    }
-
-    .brainPhoto{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      object-fit:contain;
-      display:block;
-      filter:saturate(1.16) contrast(1.08) brightness(1.03) drop-shadow(0 0 32px rgba(0,229,255,.22));
-      opacity:.96;
-      user-select:none;
-      pointer-events:none;
-      transform:translateZ(0);
-    }
-
-    .brainGlow{
-      position:absolute;
-      inset:8% 9%;
-      border-radius:50%;
-      pointer-events:none;
-      background:
-        radial-gradient(circle at 56% 42%, rgba(255,242,106,.18), transparent 18%),
-        radial-gradient(circle at 44% 55%, rgba(0,229,255,.22), transparent 24%),
-        radial-gradient(circle at 40% 44%, rgba(36,76,255,.18), transparent 32%);
-      filter:blur(18px);
-      mix-blend-mode:screen;
-      opacity:.70;
-      animation:breath 5.6s ease-in-out infinite;
-      transform:translateZ(-1px);
-    }
-
-    @keyframes breath{
-      0%,100%{opacity:.55;transform:scale(.985) translateZ(-1px)}
-      50%{opacity:.82;transform:scale(1.018) translateZ(-1px)}
-    }
-
-    canvas#particles{
-      position:absolute;
-      inset:0;
-      width:100%;
-      height:100%;
-      z-index:3;
-      pointer-events:none;
-      mix-blend-mode:screen;
-      transform:translateZ(2px);
-    }
-
-    .hotspot{
-      position:absolute;
-      z-index:5;
-      width:18px;
-      height:18px;
-      border:0;
-      border-radius:50%;
-      padding:0;
-      cursor:pointer;
-      transform:translate(-50%,-50%) translateZ(20px);
-      background:var(--hot);
-      box-shadow:0 0 14px var(--hot),0 0 38px var(--hot),0 0 74px rgba(255,255,255,.12);
-      transition:transform .2s ease, box-shadow .2s ease, opacity .2s ease;
-      will-change:transform, opacity;
-    }
-
-    .hotspot::before,.hotspot::after{
-      content:"";
-      position:absolute;
-      inset:-11px;
-      border-radius:50%;
-      border:1px solid color-mix(in srgb, var(--hot), transparent 20%);
-      opacity:0;
-      transform:scale(.7);
-    }
-
-    .hotspot:hover::before,
-    .hotspot.active::before{
-      animation:ripple 1.5s ease-out infinite;
-      opacity:.8;
-    }
-
-    .hotspot:hover::after,
-    .hotspot.active::after{
-      inset:-20px;
-      animation:ripple 1.5s ease-out infinite .72s;
-      opacity:.35;
-    }
-
-    .hotspot:hover{transform:translate(-50%,-50%) translateZ(20px) scale(1.35);box-shadow:0 0 20px var(--hot),0 0 64px var(--hot),0 0 120px rgba(255,255,255,.2)}
-    .hotspot.active{transform:translate(-50%,-50%) translateZ(20px) scale(1.42)}
-    @keyframes ripple{0%{transform:scale(.55);opacity:.8}100%{transform:scale(1.38);opacity:0}}
-
-    .label{
-      position:absolute;
-      z-index:6;
-      transform:translate(-50%,-145%) translateZ(24px);
-      padding:5px 10px;
-      border-radius:999px;
-      border:1px solid color-mix(in srgb, var(--hot), transparent 18%);
-      background:rgba(0,0,0,.54);
-      backdrop-filter:blur(12px);
-      color:#fff;
-      font:900 10px Inter,sans-serif;
-      letter-spacing:.14em;
-      text-transform:uppercase;
-      white-space:nowrap;
-      opacity:0;
-      pointer-events:none;
-      transition:opacity .18s ease, transform .18s ease;
-      box-shadow:0 0 22px color-mix(in srgb, var(--hot), transparent 35%);
-    }
-
-    .hotspot:hover + .label,
-    .hotspot.active + .label{opacity:1;transform:translate(-50%,-165%) translateZ(24px)}
-
-    .name{
-      position:fixed;
-      left:50%;
-      bottom:6.4vh;
-      transform:translateX(-50%);
-      z-index:8;
-      text-align:center;
-      pointer-events:none;
-      transition:opacity .7s ease,transform .7s ease,filter .7s ease;
-    }
-
-    .name h1{
-      margin:0;
-      font-size:clamp(2rem,5.2vw,5rem);
-      line-height:.9;
-      letter-spacing:.13em;
-      text-transform:uppercase;
-      font-weight:900;
-      background:linear-gradient(90deg,#fff 0%,var(--cyan) 34%,var(--gold) 67%,var(--violet) 100%);
-      -webkit-background-clip:text;
-      background-clip:text;
-      -webkit-text-fill-color:transparent;
-      text-shadow:0 0 55px rgba(0,229,255,.25);
-    }
-
-    .name p{margin:.76rem 0 0;color:rgba(218,240,255,.72);font-size:clamp(.7rem,1.15vw,.9rem);letter-spacing:.30em;text-transform:uppercase;font-weight:800}
-
-    .hint{
-      position:fixed;
-      left:50%;
-      top:5vh;
-      transform:translateX(-50%);
-      z-index:8;
-      padding:8px 14px;
-      border-radius:999px;
-      border:1px solid rgba(255,255,255,.11);
-      background:rgba(0,0,0,.34);
-      backdrop-filter:blur(14px);
-      color:rgba(218,240,255,.70);
-      font-size:.78rem;
-      letter-spacing:.08em;
-      white-space:nowrap;
-      pointer-events:none;
-      transition:opacity .5s ease;
-    }
-
-    .panel{
-      position:fixed;
-      z-index:12;
-      right:clamp(14px,4vw,54px);
-      top:50%;
-      transform:translateY(-50%) translateX(18px) scale(.98);
-      width:min(395px,calc(100vw - 28px));
-      max-height:70vh;
-      overflow:auto;
-      opacity:0;
-      pointer-events:none;
-      padding:24px;
-      border-radius:26px;
-      border:1px solid rgba(255,255,255,.13);
-      background:rgba(2,8,18,.72);
-      backdrop-filter:blur(30px) saturate(145%);
-      box-shadow:0 28px 88px rgba(0,0,0,.64), inset 0 0 60px rgba(0,229,255,.045);
-      transition:.45s cubic-bezier(.16,1,.3,1);
-    }
-
-    .panel.active{opacity:1;pointer-events:auto;transform:translateY(-50%) translateX(0) scale(1)}
-    .kicker{font:700 .72rem "Fira Code",monospace;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;margin-bottom:9px}
-    .panel h2{margin:0 0 11px;font-size:1.85rem;letter-spacing:-.04em;background:linear-gradient(90deg,#fff,var(--cyan),var(--violet));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
-    .panel p{color:#a9c9dd;line-height:1.68;font-size:.94rem}.panel strong{color:#fff}.panel a{color:var(--cyan)}
-    .close{width:100%;margin-top:12px;border:1px solid rgba(0,229,255,.38);background:rgba(0,229,255,.08);color:var(--cyan);border-radius:999px;padding:11px 13px;font:900 .84rem Inter,sans-serif;cursor:pointer}
-
-    .vignette{position:fixed;inset:0;z-index:4;pointer-events:none;background:radial-gradient(circle at 50% 45%, transparent 36%, rgba(0,0,0,.54) 74%, #000 100%)}
-    .grain{position:fixed;inset:0;z-index:5;pointer-events:none;opacity:.09;background-image:linear-gradient(rgba(255,255,255,.10) 1px,transparent 1px);background-size:100% 4px;mix-blend-mode:screen}
-
-    body.zoomed .name{opacity:.10;transform:translateX(-50%) translateY(18px) scale(.94);filter:blur(3px)}
-    body.zoomed .hint{opacity:.13}
-    body.zoomed .brainWrap{filter:saturate(1.25) contrast(1.12) brightness(1.06)}
-    body.zoomed .hotspot:not(.active){opacity:.22}
-
-    body.low-power .brainGlow{filter:blur(12px);opacity:.54;animation-duration:7s}
-    body.low-power .grain{opacity:.05}
-    body.low-power canvas#particles{opacity:.72}
-    body.low-power .brainPhoto{filter:saturate(1.10) contrast(1.05) brightness(1.02) drop-shadow(0 0 18px rgba(0,229,255,.17))}
-    body.low-power .hotspot::before,
-    body.low-power .hotspot::after{display:none}
-
-    body.moving .brainGlow{filter:blur(12px)}
-
-    .missing-note{display:none;position:fixed;inset:auto 18px 18px 18px;z-index:30;padding:14px 16px;border-radius:16px;background:rgba(0,0,0,.72);border:1px solid rgba(255,255,255,.12);color:#d9f3ff;font-size:.9rem;line-height:1.45;text-align:center}
-    body.missing-image .missing-note{display:block}
-
-    @media(max-width:760px){
-      .brainWrap{width:122vw}
-      .name{bottom:5vh}.hint{top:4vh;font-size:.7rem}.hotspot{width:16px;height:16px}
-      .panel{left:14px;right:14px;top:auto;bottom:14px;width:auto;max-height:52vh;padding:20px;border-radius:22px;transform:translateY(22px) scale(.98)}
-      .panel.active{transform:translateY(0) scale(1)}
-    }
-
-    @media(prefers-reduced-motion:reduce){
-      .brainGlow{animation:none}
-      .hotspot::before,.hotspot::after{animation:none!important}
-    }
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Josiah Rondon | Interactive Brain Portfolio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--cyan:#00e5ff;--blue:#244cff;--gold:#fff26a;--violet:#8d73ff;--rose:#ffb6c9;--text:#f5fbff}*{box-sizing:border-box}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#000;color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",sans-serif}body{background:radial-gradient(circle at 52% 44%,rgba(0,229,255,.13),transparent 31%),radial-gradient(circle at 61% 36%,rgba(255,242,106,.08),transparent 20%),#00050b}#scene{position:fixed;inset:0;width:100%;height:100%;display:block;z-index:0;touch-action:none}.vignette{position:fixed;inset:0;z-index:3;pointer-events:none;background:radial-gradient(circle at 50% 45%,transparent 38%,rgba(0,0,0,.58) 74%,#000 100%)}.scan{position:fixed;inset:0;z-index:4;pointer-events:none;opacity:.11;background:linear-gradient(to bottom,transparent 0 48%,rgba(0,229,255,.16) 49%,transparent 50% 100%);background-size:100% 7px;mix-blend-mode:screen}.name{position:fixed;left:50%;bottom:6.3vh;transform:translateX(-50%);z-index:8;text-align:center;pointer-events:none;transition:.55s ease}.name h1{margin:0;font-size:clamp(2rem,5.3vw,5rem);line-height:.9;letter-spacing:.13em;text-transform:uppercase;font-weight:900;background:linear-gradient(90deg,#fff 0%,var(--cyan) 34%,var(--gold) 67%,var(--violet));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 55px rgba(0,229,255,.24)}.name p{margin:.72rem 0 0;color:rgba(218,240,255,.72);font-size:clamp(.7rem,1.15vw,.9rem);letter-spacing:.30em;text-transform:uppercase;font-weight:800}body.zoomed .name{opacity:.11;transform:translateX(-50%) translateY(18px) scale(.94);filter:blur(3px)}.hint{position:fixed;left:50%;top:5vh;transform:translateX(-50%);z-index:8;padding:8px 14px;border:1px solid rgba(255,255,255,.11);border-radius:999px;background:rgba(0,0,0,.34);backdrop-filter:blur(14px);color:rgba(218,240,255,.70);font-size:.78rem;letter-spacing:.08em;white-space:nowrap;pointer-events:none;transition:.35s ease}body.zoomed .hint{opacity:.16}.panel{position:fixed;z-index:12;right:clamp(14px,4vw,54px);top:50%;transform:translateY(-50%) translateX(18px) scale(.98);width:min(395px,calc(100vw - 28px));max-height:70vh;overflow:auto;opacity:0;pointer-events:none;padding:24px;border-radius:26px;border:1px solid rgba(255,255,255,.13);background:rgba(2,8,18,.72);backdrop-filter:blur(30px) saturate(145%);box-shadow:0 28px 88px rgba(0,0,0,.64), inset 0 0 60px rgba(0,229,255,.045);transition:.45s cubic-bezier(.16,1,.3,1)}.panel.active{opacity:1;pointer-events:auto;transform:translateY(-50%) translateX(0) scale(1)}.kicker{font:700 .72rem "Fira Code",monospace;color:var(--gold);letter-spacing:.16em;text-transform:uppercase;margin-bottom:9px}.panel h2{margin:0 0 11px;font-size:1.85rem;letter-spacing:-.04em;background:linear-gradient(90deg,#fff,var(--cyan),var(--violet));-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}.panel p{color:#a9c9dd;line-height:1.68;font-size:.94rem}.panel strong{color:#fff}.panel a{color:var(--cyan)}.close{width:100%;margin-top:12px;border:1px solid rgba(0,229,255,.38);background:rgba(0,229,255,.08);color:var(--cyan);border-radius:999px;padding:11px 13px;font:900 .84rem Inter,sans-serif;cursor:pointer}.label{position:fixed;z-index:10;transform:translate(-50%,-50%);padding:5px 10px;border-radius:999px;background:rgba(0,0,0,.55);border:1px solid rgba(0,229,255,.35);color:#fff;font:900 10px Inter,sans-serif;letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;pointer-events:none;opacity:0;transition:.16s ease;box-shadow:0 0 22px rgba(0,229,255,.28)}.label.visible{opacity:1;transform:translate(-50%,-65%)}@media(max-width:760px){.hint{top:4vh;font-size:.7rem}.name{bottom:5vh}.panel{left:14px;right:14px;top:auto;bottom:14px;width:auto;max-height:52vh;padding:20px;border-radius:22px;transform:translateY(22px) scale(.98)}.panel.active{transform:translateY(0) scale(1)}}
+</style>
 </head>
 <body>
-  <div class="stage">
-    <div class="brainWrap" id="brainWrap">
-      <div class="brainGlow"></div>
-      <img class="brainPhoto" src="neural-density.png" alt="Holographic neural brain" onerror="this.style.display='none'; document.body.classList.add('missing-image');" />
-      <canvas id="particles"></canvas>
+<canvas id="scene"></canvas>
+<div class="name"><h1>Josiah Rondon</h1><p>Interactive Neural Portfolio</p></div>
+<aside class="panel" id="panel"><div class="kicker" id="kicker"></div><h2 id="title"></h2><div id="content"></div><button class="close" id="closeBtn">Back to Brain</button></aside>
+<div class="label" id="label"></div><div class="vignette"></div><div class="scan"></div>
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
-      <button class="hotspot" data-section="about" style="--hot:#fff26a;left:68%;top:38%" aria-label="About"></button><div class="label" style="--hot:#fff26a;left:68%;top:38%">About</div>
-      <button class="hotspot" data-section="skills" style="--hot:#00e5ff;left:55%;top:42%" aria-label="Skills"></button><div class="label" style="--hot:#00e5ff;left:55%;top:42%">Skills</div>
-      <button class="hotspot" data-section="experience" style="--hot:#244cff;left:36%;top:38%" aria-label="Experience"></button><div class="label" style="--hot:#244cff;left:36%;top:38%">Experience</div>
-      <button class="hotspot" data-section="projects" style="--hot:#8d73ff;left:58%;top:58%" aria-label="Projects"></button><div class="label" style="--hot:#8d73ff;left:58%;top:58%">Projects</div>
-      <button class="hotspot" data-section="contact" style="--hot:#ffb6c9;left:45%;top:76%" aria-label="Contact"></button><div class="label" style="--hot:#ffb6c9;left:45%;top:76%">Contact</div>
-    </div>
-  </div>
+const DATA = {
+	about: {
+		title: 'About Me',
+		kicker: 'Frontal Lobe',
+		html: `
+			<p>I’m a <strong>Computer Science student at Connecticut College</strong> focused on AI, automation, enterprise systems, and full-stack engineering.</p>
+			<p>Currently, I work as a <strong>Software Engineer Intern at Yale ITS</strong>, building practical AI and workflow solutions.</p>
+		`
+	},
+	skills: {
+		title: 'Skills',
+		kicker: 'Parietal Network',
+		html: `
+			<p><strong>Languages:</strong> Python, Ruby, Java, JavaScript, SQL, Node.js.</p>
+			<p><strong>Tools:</strong> Git, Docker, Azure, Intune, Jira, CI/CD.</p>
+			<p><strong>Focus:</strong> REST APIs, OAuth 2.0, OpenAI integrations, LLM workflows, and generative AI systems.</p>
+		`
+	},
+	experience: {
+		title: 'Experience',
+		kicker: 'Motor Cortex',
+		html: `
+			<p><strong>Software Engineer Intern — Yale ITS</strong><br>AI chatbot work, OAuth 2.0 proof-of-concepts, and modern engineering workflows.</p>
+			<p><strong>Central ITS Technician Intern — Yale ITS</strong><br>Large-scale recovery, provisioning, and technical operations.</p>
+		`
+	},
+	projects: {
+		title: 'Projects',
+		kicker: 'Temporal Memory',
+		html: `
+			<p><strong>Enterprise AI Chatbot</strong><br>Production-oriented workflow using OutSystems, OpenAI, and SharePoint integration concepts.</p>
+			<p><strong>Genomic Structural Variation Analysis</strong><br>Explored ensemble methods, microhomology quantification, and semi-supervised ML ideas.</p>
+		`
+	},
+	contact: {
+		title: 'Contact',
+		kicker: 'Brainstem Signal',
+		html: `
+			<p>New Haven, Connecticut<br>Bilingual Spanish / English</p>
+			<p>
+				<a href="https://www.linkedin.com/in/josiah-rondon-57a309292/" target="_blank" rel="noreferrer">LinkedIn</a>
+				· <a href="https://github.com/jrondonz" target="_blank" rel="noreferrer">GitHub</a>
+				· <a href="mailto:josiahrondon@gmail.com">Email</a>
+			</p>
+		`
+	}
+};
 
-  <div class="hint">Click a glowing neural region</div>
-  <div class="name"><h1>Josiah Rondon</h1><p>Interactive Neural Portfolio</p></div>
-  <aside class="panel" id="panel" aria-live="polite"><div class="kicker" id="kicker"></div><h2 id="title"></h2><div id="content"></div><button class="close" id="closeBtn">Back to Brain</button></aside>
-  <div class="vignette"></div><div class="grain"></div>
-  <div class="missing-note">The brain image is missing. Put <strong>neural-density.png</strong> in the same folder as this HTML file.</div>
+const canvas = document.getElementById('scene');
+const renderer = new THREE.WebGLRenderer({
+	canvas,
+	antialias: true,
+	alpha: true,
+	powerPreference: 'high-performance'
+});
+renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 1.7));
+renderer.setSize(innerWidth, innerHeight);
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.18;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
 
-  <script>
-    const sections = {
-      about:{title:'About Me',kicker:'Frontal Region',html:`<p>I’m a <strong>Computer Science student at Connecticut College</strong> focused on AI, automation, enterprise systems, and full-stack engineering.</p><p>Currently, I work as a <strong>Software Engineer Intern at Yale ITS</strong>, building practical AI and workflow solutions.</p>`},
-      skills:{title:'Skills',kicker:'Capability Network',html:`<p><strong>Languages:</strong> Python, Ruby, Java, JavaScript, SQL, Node.js.</p><p><strong>Tools:</strong> Git, Docker, Azure, Intune, Jira, CI/CD.</p><p><strong>Focus:</strong> REST APIs, OAuth 2.0, OpenAI integrations, LLM workflows, and generative AI systems.</p>`},
-      experience:{title:'Experience',kicker:'Execution Cortex',html:`<p><strong>Software Engineer Intern — Yale ITS</strong><br>AI chatbot work, OAuth 2.0 proof-of-concepts, and modern engineering workflows.</p><p><strong>Central ITS Technician Intern — Yale ITS</strong><br>Large-scale recovery, provisioning, and technical operations.</p>`},
-      projects:{title:'Projects',kicker:'Memory Region',html:`<p><strong>Enterprise AI Chatbot</strong><br>Production-oriented workflow using OutSystems, OpenAI, and SharePoint integration concepts.</p><p><strong>Genomic Structural Variation Analysis</strong><br>Explored ensemble methods, microhomology quantification, and semi-supervised ML ideas.</p>`},
-      contact:{title:'Contact',kicker:'Signal Pathway',html:`<p>New Haven, Connecticut<br>Bilingual Spanish / English</p><p><a href="https://www.linkedin.com/in/josiah-rondon-57a309292/" target="_blank" rel="noreferrer">LinkedIn</a> · <a href="https://github.com/jrondonz" target="_blank" rel="noreferrer">GitHub</a> · <a href="mailto:youremail@example.com">Email</a></p>`}
-    };
+const scene = new THREE.Scene();
+scene.fog = new THREE.FogExp2(0x020812, .048);
 
-    const focus = {
-      about:{x:68,y:38,scale:2.16},
-      skills:{x:55,y:42,scale:2.05},
-      experience:{x:36,y:38,scale:2.05},
-      projects:{x:58,y:58,scale:2.15},
-      contact:{x:45,y:76,scale:2.25}
-    };
+const camera = new THREE.PerspectiveCamera(
+	42,
+	innerWidth / innerHeight,
+	.05,
+	100
+);
+camera.position.set(0, .1, 7.35);
 
-    const wrap = document.getElementById('brainWrap');
-    const panel = document.getElementById('panel');
-    const title = document.getElementById('title');
-    const kicker = document.getElementById('kicker');
-    const content = document.getElementById('content');
-    const hotspots = [...document.querySelectorAll('.hotspot')];
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = .055;
+controls.autoRotate = true;
+controls.autoRotateSpeed = .18;
+controls.enablePan = false;
+controls.minDistance = 3.05;
+controls.maxDistance = 9.2;
+controls.target.set(.16, .02, 0);
 
-    // ---------- Performance auto-scaler ----------
-    const perf = {
-      lowPower:false,
-      dprCap:1.5,
-      particleDivisor:15000,
-      fpsSamples:[],
-      lastFrame:performance.now(),
-      checked:false,
-      particleMax:170,
-      particleMin:60
-    };
+const composer = new EffectComposer(renderer);
+composer.addPass(new RenderPass(scene, camera));
+const bloom = new UnrealBloomPass(
+	new THREE.Vector2(innerWidth, innerHeight),
+	1.22,
+	.58,
+	.08
+);
+composer.addPass(bloom);
+composer.addPass(new OutputPass());
 
-    const saveData = navigator.connection && navigator.connection.saveData;
-    const lowMemory = navigator.deviceMemory && navigator.deviceMemory <= 4;
-    const lowCores = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4;
-    if(saveData || lowMemory || lowCores || window.innerWidth < 760){
-      enableLowPower();
-    }
+scene.add(new THREE.AmbientLight(0x071421, .65));
+const key = new THREE.DirectionalLight(0xc8eeff, 2.15);
+key.position.set(4, 5, 6);
+scene.add(key);
+const rim = new THREE.DirectionalLight(0x00e5ff, 1.8);
+rim.position.set(-6, 2, -4);
+scene.add(rim);
+const warm = new THREE.PointLight(0xfff26a, 2.8, 9);
+warm.position.set(1.7, 1.3, 2.5);
+scene.add(warm);
+const blue = new THREE.PointLight(0x244cff, 2.3, 10);
+blue.position.set(-2.4, -.6, 1.8);
+scene.add(blue);
 
-    function enableLowPower(){
-      if(perf.lowPower) return;
-      perf.lowPower = true;
-      perf.dprCap = 1.15;
-      perf.particleDivisor = 23000;
-      perf.particleMax = 105;
-      perf.particleMin = 38;
-      document.body.classList.add('low-power');
-      resizeParticles();
-    }
+const brainGroup = new THREE.Group();
+brainGroup.position.set(0, .18, 0);
+brainGroup.rotation.set(-.035, .05, 0);
+scene.add(brainGroup);
 
-    function sampleFPS(now){
-      const dt = now - perf.lastFrame;
-      perf.lastFrame = now;
-      if(dt > 0) perf.fpsSamples.push(1000 / dt);
-      if(perf.fpsSamples.length > 90 && !perf.checked){
-        const avg = perf.fpsSamples.reduce((a,b)=>a+b,0) / perf.fpsSamples.length;
-        perf.checked = true;
-        if(avg < 45) enableLowPower();
-      }
-    }
+const C = {
+	cyan: new THREE.Color('#00e5ff'),
+	blue: new THREE.Color('#244cff'),
+	gold: new THREE.Color('#fff26a'),
+	white: new THREE.Color('#e9fbff'),
+	violet: new THREE.Color('#8d73ff'),
+	rose: new THREE.Color('#ffb6c9')
+};
 
-    // ---------- Camera-like transform motion ----------
-    const state = {
-      baseX:0, baseY:0, scale:1, rotX:0, rotY:0,
-      targetBaseX:0, targetBaseY:0, targetScale:1,
-      zoomed:false,
-      mx:0, my:0,
-      pulseSection:null,
-      transformLocked:false
-    };
+const low =
+	innerWidth < 760 ||
+	(navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) ||
+	(navigator.deviceMemory && navigator.deviceMemory <= 4);
 
-    function easeOutExpo(t){ return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); }
-    function easeInOutCubic(t){ return t < .5 ? 4*t*t*t : 1 - Math.pow(-2*t+2,3)/2; }
+const positions = [];
+const base = [];
+const colors = [];
+const sizes = [];
+const groovePositions = [];
 
-    let zoomTween = null;
-    let movingTimer = null;
+function lobePoint(center, scale, count, cA, cB, o = {}) {
+	for (let i = 0; i < count; i++) {
+		const u = Math.random() * Math.PI * 2,
+			v = Math.acos(2 * Math.random() - 1),
+			r = Math.cbrt(Math.random());
+		let x = center[0] + Math.sin(v) * Math.cos(u) * scale[0] * r,
+			y = center[1] + Math.cos(v) * scale[1] * r,
+			z = center[2] + Math.sin(v) * Math.sin(u) * scale[2] * r;
+		const gyri =
+			Math.sin(x * 10.5 + y * 6.2) * .042 +
+			Math.sin(z * 15.5 - y * 5.5) * .038 +
+			Math.sin((x + z) * 23.0) * .022;
+		x += Math.sign(x - center[0]) * gyri * .55;
+		y += gyri * .42;
+		z += Math.sign(z || 1) * gyri * .45;
+		positions.push(x, y, z);
+		base.push(x, y, z);
+		const c = cA.clone().lerp(cB, Math.random() * .85);
+		if (Math.random() > .90) c.lerp(C.white, .25);
+		colors.push(c.r, c.g, c.b);
+		sizes.push(THREE.MathUtils.randFloat(o.minSize || .010, o.maxSize || .030));
+	}
+}
 
-    function animateTo(target, duration=1050){
-      document.body.classList.add('moving');
-      clearTimeout(movingTimer);
-      movingTimer = setTimeout(()=>document.body.classList.remove('moving'), duration + 120);
-      zoomTween = {
-        start:performance.now(),
-        duration,
-        from:{x:state.baseX,y:state.baseY,scale:state.scale},
-        to:target
-      };
-    }
+lobePoint([.83, .30, .03], [.88, .68, .54], low ? 7000 : 15000, C.cyan, C.gold);
+lobePoint([-.18, .48, .00], [1.05, .73, .58], low ? 8000 : 17000, C.blue, C.cyan);
+lobePoint([-1.05, .18, -.02], [.72, .62, .50], low ? 5200 : 11500, C.blue, C.violet);
+lobePoint([.20, -.48, .07], [.92, .38, .44], low ? 4800 : 10500, C.cyan, C.violet);
+lobePoint([-.70, -.72, .02], [.55, .30, .32], low ? 2600 : 6200, C.blue, C.gold);
+lobePoint([-.12, -.02, .07], [.76, .30, .28], low ? 2800 : 6500, C.white, C.cyan, { minSize: .009, maxSize: .023 });
+lobePoint([.30, .08, .10], [.34, .23, .22], low ? 1300 : 3200, C.gold, C.white, { minSize: .009, maxSize: .021 });
 
-    function openSection(section){
-      const data = sections[section];
-      const f = focus[section];
-      if(!data || !f) return;
-      title.textContent = data.title;
-      kicker.textContent = data.kicker;
-      content.innerHTML = data.html;
-      panel.classList.add('active');
-      document.body.classList.add('zoomed');
-      hotspots.forEach(h => h.classList.toggle('active', h.dataset.section === section));
-      state.zoomed = true;
-      state.pulseSection = section;
-      const tx = 50 - f.x;
-      const ty = 50 - f.y;
-      animateTo({x:tx, y:ty, scale:f.scale}, 1150);
-    }
+const stemN = low ? 1300 : 3000;
+for (let i = 0; i < stemN; i++) {
+	const t = i / stemN,
+		a = Math.random() * Math.PI * 2,
+		r = (.13 * (1 - t) + .042) * Math.sqrt(Math.random()),
+		bend = -.10 * Math.sin(t * Math.PI),
+		x = -.18 + bend + Math.cos(a) * r,
+		y = -.88 - t * .82,
+		z = .02 + Math.sin(a) * r * .75;
+	positions.push(x, y, z);
+	base.push(x, y, z);
+	const c = C.rose.clone().lerp(C.cyan, t * .5);
+	colors.push(c.r, c.g, c.b);
+	sizes.push(THREE.MathUtils.randFloat(.009, .024));
+}
 
-    function closeSection(){
-      panel.classList.remove('active');
-      document.body.classList.remove('zoomed');
-      hotspots.forEach(h => h.classList.remove('active'));
-      state.zoomed = false;
-      state.pulseSection = null;
-      animateTo({x:0, y:0, scale:1}, 980);
-    }
+function addGroove(cx, cy, cz, rx, ry, rz, start, end, turns, count) {
+	for (let i = 0; i < count; i++) {
+		const t = i / (count - 1),
+			a = start + (end - start) * t,
+			wig = Math.sin(t * Math.PI * turns) * .085;
+		groovePositions.push(
+			cx + Math.cos(a) * rx + wig,
+			cy + Math.sin(a) * ry + Math.sin(t * 18) * .025,
+			cz + Math.sin(a * 1.2) * rz
+		);
+	}
+}
 
-    hotspots.forEach(h => {
-      h.addEventListener('click', () => openSection(h.dataset.section));
-      h.addEventListener('pointerenter', () => state.pulseSection = h.dataset.section);
-      h.addEventListener('pointerleave', () => { if(!state.zoomed) state.pulseSection = null; });
-    });
-    document.getElementById('closeBtn').addEventListener('click', closeSection);
-    window.addEventListener('keydown', e => { if(e.key === 'Escape') closeSection(); });
+addGroove(.20, .72, .58, 1.05, .20, .05, Math.PI * .96, Math.PI * 1.92, 6, 240);
+addGroove(.30, .33, .62, 1.15, .22, .05, Math.PI * .86, Math.PI * 1.78, 5, 220);
+addGroove(.15, -.10, .62, 1.05, .18, .04, Math.PI * .95, Math.PI * 1.78, 5, 220);
+addGroove(-.75, .08, .57, .48, .40, .04, Math.PI * .68, Math.PI * 1.86, 4, 170);
+addGroove(.78, .05, .61, .42, .36, .04, Math.PI * .12, Math.PI * 1.72, 4, 170);
 
-    window.addEventListener('pointermove', e => {
-      state.mx = (e.clientX / window.innerWidth - .5) * 2;
-      state.my = (e.clientY / window.innerHeight - .5) * 2;
-    }, {passive:true});
+const geo = new THREE.BufferGeometry();
+geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+geo.setAttribute('base', new THREE.Float32BufferAttribute(base, 3));
+geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+geo.setAttribute('aSize', new THREE.Float32BufferAttribute(sizes, 1));
 
-    // ---------- Synaptic particles only pulse on hover/active ----------
-    const canvas = document.getElementById('particles');
-    const ctx = canvas.getContext('2d', { alpha:true });
-    let w=0,h=0,dpr=1,particles=[];
+const mat = new THREE.ShaderMaterial({
+	transparent: true,
+	depthWrite: false,
+	blending: THREE.AdditiveBlending,
+	vertexColors: true,
+	uniforms: {
+		uTime: { value: 0 },
+		uPulse: { value: 0 },
+		uScale: { value: low ? 52 : 68 }
+	},
+	vertexShader: `
+		attribute float aSize;
+		attribute vec3 base;
+		varying vec3 vColor;
+		uniform float uTime, uPulse, uScale;
+		void main() {
+			vColor = color;
+			vec3 p = position;
+			float wave = sin(length(base.xy) * 8.5 - uTime * 2.8 + uPulse * 5.0) * .018 * uPulse;
+			float breathe = sin(uTime * .95 + base.y * 4.0) * .009;
+			p += normalize(base) * (wave + breathe);
+			vec4 mv = modelViewMatrix * vec4(p, 1.0);
+			gl_PointSize = aSize * uScale * (1.0 + uPulse * .8) / max(.72, -mv.z);
+			gl_Position = projectionMatrix * mv;
+		}
+	`,
+	fragmentShader: `
+		varying vec3 vColor;
+		void main() {
+			vec2 uv = gl_PointCoord - .5;
+			float d = length(uv);
+			float a = smoothstep(.52, .04, d);
+			float core = smoothstep(.18, 0.0, d);
+			gl_FragColor = vec4(vColor * (1.08 + core * 1.55), a);
+		}
+	`
+});
 
-    const pulseZones = {
-      about:{x:.68,y:.38,c:'255,242,106'},
-      skills:{x:.55,y:.42,c:'0,229,255'},
-      experience:{x:.36,y:.38,c:'36,76,255'},
-      projects:{x:.58,y:.58,c:'141,115,255'},
-      contact:{x:.45,y:.76,c:'255,182,201'}
-    };
+const brain = new THREE.Points(geo, mat);
+brain.scale.setScalar(1.48);
+brainGroup.add(brain);
 
-    function resizeParticles(){
-      if(!canvas || !ctx) return;
-      const rect = canvas.getBoundingClientRect();
-      dpr = Math.min(window.devicePixelRatio || 1, perf.dprCap);
-      w = Math.max(1, Math.floor(rect.width*dpr));
-      h = Math.max(1, Math.floor(rect.height*dpr));
-      canvas.width = w;
-      canvas.height = h;
-      const count = Math.floor((rect.width * rect.height) / perf.particleDivisor);
-      const finalCount = Math.max(perf.particleMin, Math.min(perf.particleMax, count));
-      particles = Array.from({length:finalCount}, () => ({
-        x:(.30+Math.random()*.47)*w,
-        y:(.18+Math.random()*.55)*h,
-        r:(Math.random()*1.05+.35)*dpr,
-        a:Math.random()*Math.PI*2,
-        s:.16+Math.random()*.42,
-        c:Math.random()<.45?'0,229,255':Math.random()<.78?'255,242,106':'141,115,255'
-      }));
-    }
+const grooveGeo = new THREE.BufferGeometry();
+grooveGeo.setAttribute('position', new THREE.Float32BufferAttribute(groovePositions, 3));
+const grooveMat = new THREE.PointsMaterial({
+	size: low ? .018 : .022,
+	color: 0x031325,
+	transparent: true,
+	opacity: .82,
+	blending: THREE.NormalBlending,
+	depthWrite: false
+});
+const grooves = new THREE.Points(grooveGeo, grooveMat);
+grooves.scale.copy(brain.scale);
+brainGroup.add(grooves);
 
-    let pageVisible = true;
-    document.addEventListener('visibilitychange', () => { pageVisible = !document.hidden; });
+const linePositions = [];
+const total = positions.length / 3;
+for (let i = 0; i < (low ? 650 : 1350); i++) {
+	const a = Math.floor(Math.random() * total),
+		b = Math.floor(Math.random() * total),
+		ax = positions[a * 3],
+		ay = positions[a * 3 + 1],
+		az = positions[a * 3 + 2],
+		bx = positions[b * 3],
+		by = positions[b * 3 + 1],
+		bz = positions[b * 3 + 2],
+		d = Math.hypot(ax - bx, ay - by, az - bz);
+	if (d > .16 && d < .36) linePositions.push(ax, ay, az, bx, by, bz);
+}
+const lineGeo = new THREE.BufferGeometry();
+lineGeo.setAttribute('position', new THREE.Float32BufferAttribute(linePositions, 3));
+const lineMat = new THREE.LineBasicMaterial({
+	color: 0x8eefff,
+	transparent: true,
+	opacity: .048,
+	blending: THREE.AdditiveBlending,
+	depthWrite: false
+});
+const lines = new THREE.LineSegments(lineGeo, lineMat);
+lines.scale.copy(brain.scale);
+brainGroup.add(lines);
 
-    function drawParticles(t){
-      ctx.clearRect(0,0,w,h);
-      if(!pageVisible){ requestAnimationFrame(drawParticles); return; }
+const hotspots = [
+	{
+		section: 'about',
+		label: 'About',
+		pos: [.98, .46, .64],
+		color: 0xfff26a,
+		cam: [1.70, .72, 2.75]
+	},
+	{
+		section: 'skills',
+		label: 'Skills',
+		pos: [-.08, .92, .60],
+		color: 0x00e5ff,
+		cam: [.24, 1.42, 2.62]
+	},
+	{
+		section: 'experience',
+		label: 'Experience',
+		pos: [-.86, .28, .58],
+		color: 0x244cff,
+		cam: [-1.22, .58, 2.78]
+	},
+	{
+		section: 'projects',
+		label: 'Projects',
+		pos: [.18, -.40, .62],
+		color: 0x8d73ff,
+		cam: [.54, -.52, 2.70]
+	},
+	{
+		section: 'contact',
+		label: 'Contact',
+		pos: [-.30, -1.18, .30],
+		color: 0xffb6c9,
+		cam: [-.48, -1.20, 2.92]
+	}
+];
+const hotspotMeshes = [];
+const hotGroup = new THREE.Group();
+brainGroup.add(hotGroup);
+hotspots.forEach(h => {
+	const dot = new THREE.Mesh(
+		new THREE.SphereGeometry(.058, 24, 24),
+		new THREE.MeshStandardMaterial({
+			color: h.color,
+			emissive: h.color,
+			emissiveIntensity: 3.2,
+			roughness: .25
+		})
+	);
+	dot.position.set(...h.pos);
+	dot.userData = h;
+	const ring = new THREE.Mesh(
+		new THREE.TorusGeometry(.145, .007, 8, 48),
+		new THREE.MeshBasicMaterial({
+			color: h.color,
+			transparent: true,
+			opacity: .62,
+			blending: THREE.AdditiveBlending
+		})
+	);
+	ring.position.copy(dot.position);
+	hotGroup.add(dot, ring);
+	hotspotMeshes.push({ dot, ring, data: h });
+});
 
-      ctx.globalCompositeOperation='lighter';
-
-      // Quiet ambient shimmer: tiny, cheap, and subtle.
-      for(const p of particles){
-        const ox=Math.cos(t*.0007*p.s+p.a)*5*dpr;
-        const oy=Math.sin(t*.0009*p.s+p.a)*3*dpr;
-        const alpha=perf.lowPower ? .10 : .14;
-        ctx.beginPath();
-        ctx.fillStyle=`rgba(${p.c},${alpha})`;
-        ctx.shadowBlur=perf.lowPower ? 4*dpr : 8*dpr;
-        ctx.shadowColor=`rgba(${p.c},.7)`;
-        ctx.arc(p.x+ox,p.y+oy,p.r,0,Math.PI*2);
-        ctx.fill();
-      }
-
-      // Synaptic pulse only when hovering or zoomed into a section.
-      if(state.pulseSection && pulseZones[state.pulseSection]){
-        const z = pulseZones[state.pulseSection];
-        const cx = z.x*w;
-        const cy = z.y*h;
-        const pulse = (t * .00115) % 1;
-        const maxR = (perf.lowPower ? 105 : 165) * dpr;
-        for(let i=0;i<(perf.lowPower?2:3);i++){
-          const phase = (pulse + i*.30) % 1;
-          const radius = phase * maxR;
-          const alpha = (1-phase) * (perf.lowPower ? .28 : .38);
-          ctx.beginPath();
-          ctx.strokeStyle = `rgba(${z.c},${alpha})`;
-          ctx.lineWidth = (1.2 + (1-phase)*1.7) * dpr;
-          ctx.shadowBlur = (perf.lowPower ? 10 : 18) * dpr;
-          ctx.shadowColor = `rgba(${z.c},.9)`;
-          ctx.arc(cx, cy, radius, 0, Math.PI*2);
-          ctx.stroke();
-        }
-
-        const rays = perf.lowPower ? 5 : 9;
-        for(let i=0;i<rays;i++){
-          const angle = (Math.PI*2/rays)*i + t*.0013;
-          const len = (44 + Math.sin(t*.003+i)*16) * dpr;
-          ctx.beginPath();
-          ctx.strokeStyle = `rgba(${z.c},${perf.lowPower?.18:.28})`;
-          ctx.lineWidth = .9*dpr;
-          ctx.moveTo(cx, cy);
-          ctx.lineTo(cx + Math.cos(angle)*len, cy + Math.sin(angle)*len);
-          ctx.stroke();
-        }
-      }
-
-      ctx.shadowBlur=0;
-      requestAnimationFrame(drawParticles);
-    }
-
-    // ---------- Master animation: one GPU-friendly transform ----------
-    let lastTransform = '';
-    function animate(now){
-      sampleFPS(now);
-
-      if(zoomTween){
-        const raw = Math.min(1, (now - zoomTween.start) / zoomTween.duration);
-        const e = easeInOutCubic(raw);
-        state.baseX = zoomTween.from.x + (zoomTween.to.x - zoomTween.from.x) * e;
-        state.baseY = zoomTween.from.y + (zoomTween.to.y - zoomTween.from.y) * e;
-        state.scale = zoomTween.from.scale + (zoomTween.to.scale - zoomTween.from.scale) * easeOutExpo(raw);
-        if(raw >= 1) zoomTween = null;
-      }
-
-      const time = now * .001;
-      const driftX = Math.sin(time*.42) * (state.zoomed ? 1.6 : 7.0);
-      const driftY = Math.cos(time*.48) * (state.zoomed ? 1.2 : 4.5);
-      const parallaxX = state.mx * (state.zoomed ? 1.6 : 8.5);
-      const parallaxY = state.my * (state.zoomed ? 1.1 : 5.5);
-      const rotX = state.my * (state.zoomed ? 1.2 : 3.0) + Math.sin(time*.55) * .7;
-      const rotY = state.mx * (state.zoomed ? 1.8 : 4.0) + Math.cos(time*.50) * .9;
-      const rotZ = Math.sin(time*.27) * .55;
-      const breathe = 1 + Math.sin(time*.75) * (state.zoomed ? .0025 : .006);
-
-      const transform = `translate3d(calc(${state.baseX}% + ${driftX + parallaxX}px), calc(${state.baseY}% + ${driftY + parallaxY}px), 0) rotateX(${-rotX}deg) rotateY(${rotY}deg) rotateZ(${rotZ}deg) scale(${state.scale * breathe})`;
-      if(transform !== lastTransform){
-        wrap.style.transform = transform;
-        lastTransform = transform;
-      }
-
-      requestAnimationFrame(animate);
-    }
-
-    resizeParticles();
-    requestAnimationFrame(drawParticles);
-    requestAnimationFrame(animate);
-    window.addEventListener('resize', resizeParticles, {passive:true});
-  </script>
+const panel = document.getElementById('panel');
+const title = document.getElementById('title');
+const kicker = document.getElementById('kicker');
+const content = document.getElementById('content');
+const label = document.getElementById('label');
+const raycaster = new THREE.Raycaster();
+const pointer = new THREE.Vector2(9, 9);
+let hovered = null;
+let active = null;
+let pulse = 0;
+let tween = null;
+const startCam = new THREE.Vector3(0, .1, 7.35);
+const startTarget = new THREE.Vector3(.16, .02, 0);
+function world(local) {
+	return new THREE.Vector3(...local)
+		.multiplyScalar(1.48)
+		.applyMatrix4(brainGroup.matrixWorld);
+}
+function moveCamera(toCam, toTarget, duration = 1050) {
+	tween = {
+		t: 0,
+		duration,
+		fromCam: camera.position.clone(),
+		toCam: toCam.clone(),
+		fromTarget: controls.target.clone(),
+		toTarget: toTarget.clone()
+	};
+}
+function ease(t) {
+	return 1 - Math.pow(1 - t, 3);
+}
+function openSection(section) {
+	const data = DATA[section];
+	const hot = hotspots.find(h => h.section === section);
+	if (!data || !hot) return;
+	active = section;
+	title.textContent = data.title;
+	kicker.textContent = data.kicker;
+	content.innerHTML = data.html;
+	panel.classList.add('active');
+	document.body.classList.add('zoomed');
+	controls.autoRotate = false;
+	pulse = 1;
+	moveCamera(world(hot.cam), world(hot.pos), 1100);
+}
+function closeSection() {
+	active = null;
+	panel.classList.remove('active');
+	document.body.classList.remove('zoomed');
+	controls.autoRotate = true;
+	pulse = .7;
+	moveCamera(startCam, startTarget, 900);
+}
+document.getElementById('closeBtn').addEventListener('click', closeSection);
+window.addEventListener('pointermove', e => {
+	const r = canvas.getBoundingClientRect();
+	pointer.x = ((e.clientX - r.left) / r.width) * 2 - 1;
+	pointer.y = -((e.clientY - r.top) / r.height) * 2 + 1;
+}, { passive: true });
+canvas.addEventListener('click', () => {
+	if (hovered) {
+		openSection(hovered.userData.section);
+	}
+});
+window.addEventListener('keydown', e => {
+	if (e.key === 'Escape') {
+		closeSection();
+	}
+});
+function updateLabel() {
+	if (!hovered) {
+		label.classList.remove('visible');
+		return;
+	}
+	const p = hovered.getWorldPosition(new THREE.Vector3()).project(camera);
+	label.textContent = hovered.userData.label;
+	label.style.left = `${(p.x * .5 + .5) * innerWidth}px`;
+	label.style.top = `${(-p.y * .5 + .5) * innerHeight}px`;
+	label.classList.add('visible');
+}
+const clock = new THREE.Clock();
+let visible = true;
+document.addEventListener('visibilitychange', () => visible = !document.hidden);
+function animate() {
+	requestAnimationFrame(animate);
+	if (!visible) return;
+	const dt = clock.getDelta(), t = clock.elapsedTime;
+	pulse *= .94;
+	if (tween) {
+		tween.t = Math.min(1, tween.t + (dt * 1000) / tween.duration);
+		const e = ease(tween.t);
+		camera.position.lerpVectors(tween.fromCam, tween.toCam, e);
+		controls.target.lerpVectors(tween.fromTarget, tween.toTarget, e);
+		if (tween.t >= 1) tween = null;
+	}
+	raycaster.setFromCamera(pointer, camera);
+	const hits = raycaster.intersectObjects(hotspotMeshes.map(h => h.dot), false);
+	hovered = hits.length ? hits[0].object : null;
+	document.body.style.cursor = hovered ? 'pointer' : 'default';
+	if (hovered) pulse = Math.max(pulse, .45);
+	if (!active && !tween) brainGroup.rotation.y += .00078;
+	brainGroup.rotation.z = Math.sin(t * .32) * .012;
+	mat.uniforms.uTime.value = t;
+	mat.uniforms.uPulse.value = pulse;
+	lineMat.opacity = .042 + pulse * .052;
+	bloom.strength += (1.20 + pulse * .26 - bloom.strength) * .055;
+	hotspotMeshes.forEach((h, i) => {
+		const on = hovered === h.dot || active === h.data.section;
+		h.dot.scale.setScalar(on ? 1.8 : 1 + Math.sin(t * 2.1 + i) * .08);
+		h.ring.lookAt(camera.position);
+		h.ring.scale.setScalar(1 + Math.sin(t * 2.4 + i) * .16 + (on ? .55 : 0));
+		h.ring.material.opacity = on ? 1 : .58;
+	});
+	controls.update();
+	updateLabel();
+	composer.render();
+}
+animate();
+window.addEventListener('resize', () => {
+	camera.aspect = innerWidth / innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize(innerWidth, innerHeight);
+	composer.setSize(innerWidth, innerHeight);
+	bloom.setSize(innerWidth, innerHeight);
+	mat.uniforms.uScale.value = innerWidth < 760 ? 52 : 68;
+});
+</script>
 </body>
 </html>
