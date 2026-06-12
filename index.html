@@ -247,16 +247,6 @@
 					font-size: .9rem;
 				}
 			}
-			/* Additional mobile touch improvements */
-			@media (max-width: 480px) {
-				.panel {
-					max-height: 62vh;
-					padding: 18px;
-				}
-				.panel h2 {
-					font-size: 1.5rem;
-				}
-			}
 		</style>
 	</head>
 	<body>
@@ -265,7 +255,6 @@
 			<h1>Josiah Rondon</h1>
 			<p>Interactive Neural Portfolio</p>
 		</div>
-		<div class="hint">✨ Tap a glowing node to explore | Drag orbit | Pinch zoom</div>
 		<aside class="panel" id="panel">
 			<div class="kicker" id="kicker"></div>
 			<h2 id="title"></h2>
@@ -295,7 +284,7 @@
 				about: {
 					title: 'About Me',
 					kicker: 'Frontal Lobe',
-					html: `<p>I'm a <strong>Computer Science student at Connecticut College</strong> focused on AI, automation, enterprise systems, and full-stack engineering.</p><p>Currently, I work as a <strong>Software Engineer Intern at Yale ITS</strong>, building practical AI and workflow solutions.</p>`
+					html: `<p>I'm a Software Engineer focused on AI, automation, enterprise systems, and full-stack engineering.</p><p>Currently, I work as a <strong>Software Engineer at Yale ITS</strong>, building enterprise + custom applications that actually solve internal organization problems.</p>`
 				},
 				skills: {
 					title: 'Skills',
@@ -305,7 +294,9 @@
 				experience: {
 					title: 'Experience',
 					kicker: 'Motor Cortex',
-					html: `<p><strong>Software Engineer Intern — Yale ITS</strong><br>AI chatbot work, OAuth 2.0 proof-of-concepts, and modern engineering workflows.</p><p><strong>Central ITS Technician Intern — Yale ITS</strong><br>Large-scale recovery, provisioning, and technical operations.</p>`
+					html: `<p><strong>Software Engineer — Yale ITS</strong><br> OutSystems Dev, Maintain continuous integration and delivery speed by following Agile practices such as Scrum, using
+Git/GitHub for version control, Ruby for implementation, Jira for task management, and Docker for
+consistent build environments.</p> <p><strong>Central ITS Technician Intern — Yale ITS</strong><br>Large-scale recovery, provisioning, and technical operations.</p>`
 				},
 				projects: {
 					title: 'Projects',
@@ -346,7 +337,6 @@
 			controls.minDistance = 3.15;
 			controls.maxDistance = 9.5;
 			controls.target.set(.16, .03, 0);
-			// Mobile friendly: allow touch zoom
 			controls.enableZoom = true;
 			controls.zoomSpeed = 0.8;
 
@@ -706,8 +696,7 @@
 				kicker = document.getElementById('kicker'),
 				content = document.getElementById('content'),
 				label = document.getElementById('label'),
-				raycaster = new THREE.Raycaster(),
-				pointer = new THREE.Vector2(9, 9);
+				raycaster = new THREE.Raycaster();
 			let hovered = null, active = null, pulse = 0, tween = null;
 			const startCam = new THREE.Vector3(0, .14, 7.55),
 				startTarget = new THREE.Vector3(.16, .03, 0);
@@ -758,20 +747,47 @@
 			}
 
 			document.getElementById('closeBtn').addEventListener('click', closeSection);
-			// Improved mobile/desktop interaction
-			canvas.addEventListener('click', (e) => {
-				if (hovered) {
-					e.stopPropagation();
-					openSection(hovered.userData.section);
+			
+			// Helper: get normalized device coordinates from mouse/touch event
+			function getNormalizedCoords(event) {
+				const rect = canvas.getBoundingClientRect();
+				let clientX, clientY;
+				if (event.touches) {
+					clientX = event.touches[0].clientX;
+					clientY = event.touches[0].clientY;
+				} else {
+					clientX = event.clientX;
+					clientY = event.clientY;
 				}
+				const x = ((clientX - rect.left) / rect.width) * 2 - 1;
+				const y = -((clientY - rect.top) / rect.height) * 2 + 1;
+				return new THREE.Vector2(x, y);
+			}
+			
+			// Immediate raycast on click/tap
+			function handleInteraction(event) {
+				if (active) return; // panel open, ignore interactions on canvas
+				const coords = getNormalizedCoords(event);
+				raycaster.setFromCamera(coords, camera);
+				const hits = raycaster.intersectObjects(hotspotMeshes.map(h => h.dot));
+				if (hits.length) {
+					const hit = hits[0].object;
+					openSection(hit.userData.section);
+					event.preventDefault();
+				}
+			}
+			
+			canvas.addEventListener('click', handleInteraction);
+			canvas.addEventListener('touchstart', handleInteraction, { passive: false });
+			
+			// Update hover for desktop pointer movement (for label and cursor)
+			let pointer = new THREE.Vector2();
+			window.addEventListener('pointermove', (e) => {
+				const rect = canvas.getBoundingClientRect();
+				pointer.x = ((e.clientX - rect.left) / rect.width) * 2 - 1;
+				pointer.y = -((e.clientY - rect.top) / rect.height) * 2 + 1;
 			});
-			// Touch friendly: also tap on canvas
-			canvas.addEventListener('touchstart', (e) => {
-				if (hovered) {
-					e.preventDefault();
-					openSection(hovered.userData.section);
-				}
-			}, { passive: false });
+			
 			window.addEventListener('keydown', e => {
 				if (e.key === 'Escape') closeSection();
 			});
@@ -806,11 +822,17 @@
 					controls.target.lerpVectors(tween.fromTarget, tween.toTarget, e);
 					if (tween.t >= 1) tween = null;
 				}
-				raycaster.setFromCamera(pointer, camera);
-				const hits = raycaster.intersectObjects(hotspotMeshes.map(h => h.dot), false);
-				hovered = hits.length ? hits[0].object : null;
-				canvas.style.cursor = hovered ? 'pointer' : 'grab';
-				if (hovered) pulse = Math.max(pulse, .45);
+				// Update hover for label and cursor (only if no active panel)
+				if (!active) {
+					raycaster.setFromCamera(pointer, camera);
+					const hits = raycaster.intersectObjects(hotspotMeshes.map(h => h.dot));
+					hovered = hits.length ? hits[0].object : null;
+					canvas.style.cursor = hovered ? 'pointer' : 'grab';
+					if (hovered) pulse = Math.max(pulse, .45);
+				} else {
+					hovered = null;
+					canvas.style.cursor = 'default';
+				}
 				if (!active && !tween) brainGroup.rotation.y += .00078;
 				brainGroup.rotation.z = Math.sin(t * .32) * .010;
 				dust.rotation.y = -t * .009;
@@ -824,7 +846,7 @@
 				glowGrooveMat.opacity = .13 + pulse * .13;
 				bloom.strength += (.86 + pulse * .20 - bloom.strength) * .055;
 				hotspotMeshes.forEach((h, i) => {
-					const on = hovered === h.dot || active === h.data.section;
+					const on = (hovered === h.dot) || (active === h.data.section);
 					h.dot.scale.setScalar(on ? 1.72 : 1 + Math.sin(t * 2.1 + i) * .07);
 					if (h.ring) {
 						h.ring.lookAt(camera.position);
